@@ -22,7 +22,6 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
 # Charger les actifs
-BG = pygame.image.load("assets/Background.png")
 MAP = pygame.image.load("assets/Map.png")
 MAP = pygame.transform.scale(MAP, (WIDTH, HEIGHT))
 
@@ -38,16 +37,16 @@ class Game:
     def __init__(self, screen):
         self.screen = screen
         axel_path = [
-            r"C:\Users\amine\Desktop\PartieAxel\Projet_OOP\Operators\Thermite.png",
-            r'C:\Users\amine\Desktop\PartieAxel\Projet_OOP\Operators\Glaz.png',
-            r'C:\Users\amine\Desktop\PartieAxel\Projet_OOP\Operators\Fuze.png',
-            r'C:\Users\amine\Desktop\PartieAxel\Projet_OOP\Operators\Montagne.png',
-            r'C:\Users\amine\Desktop\PartieAxel\Projet_OOP\Operators\Doc.png',
-            r'C:\Users\amine\Desktop\PartieAxel\Projet_OOP\Operators\Jackal.png',
-            r'C:\Users\amine\Desktop\PartieAxel\Projet_OOP\Operators\Smoke.png',
-            r'C:\Users\amine\Desktop\PartieAxel\Projet_OOP\Operators\Jaeger.png',
-            r'C:\Users\amine\Desktop\PartieAxel\Projet_OOP\Operators\Caveira.png',
-            r'C:\Users\amine\Desktop\PartieAxel\Projet_OOP\Operators\Kapkan.png'
+            r"C:\Users\amine\Desktop\Projet Python\Projet_OOP\Operators\Thermite.png",
+            r'C:\Users\amine\Desktop\Projet Python\Projet_OOP\Operators\Glaz.png',
+            r'C:\Users\amine\Desktop\Projet Python\Projet_OOP\Operators\Fuze.png',
+            r'C:\Users\amine\Desktop\Projet Python\Projet_OOP\Operators\Montagne.png',
+            r'C:\Users\amine\Desktop\Projet Python\Projet_OOP\Operators\Doc.png',
+            r'C:\Users\amine\Desktop\Projet Python\Projet_OOP\Operators\Jackal.png',
+            r'C:\Users\amine\Desktop\Projet Python\Projet_OOP\Operators\Smoke.png',
+            r'C:\Users\amine\Desktop\Projet Python\Projet_OOP\Operators\Jaeger.png',
+            r'C:\Users\amine\Desktop\Projet Python\Projet_OOP\Operators\Caveira.png',
+            r'C:\Users\amine\Desktop\Projet Python\Projet_OOP\Operators\Kapkan.png'
         ]
         self.player_units = [
             Unit(0, 0, 120, 50, 50, 2, 'player', 'Thermite', axel_path[0]),
@@ -64,55 +63,90 @@ class Game:
             Unit(7, 4, 120, 70, 75, 2, 'enemy', 'Kapkan', axel_path[9])
         ]
         self.hostage = Hostage(GRID_SIZE_X // 2, GRID_SIZE_Y // 2,
-                               r"C:\Users\amine\Desktop\PartieAxel\Projet_OOP\Operators\Hostage.png")
+                               r"C:\Users\amine\Desktop\Projet Python\Projet_OOP\Operators\Hostage.png")
 
-    def handle_turn(self, units, opponents, pause_button):
-        """Gère les tours de jeu et vérifie le bouton Pause."""
-        for selected_unit in units:
-            has_acted = False
-            selected_unit.is_selected = True
+    def handle_turn(self, active_units, opponents, pause_button, color):
+        """Gère un tour avec sélection d'unité."""
+        selected_index = 0
+        has_selected_unit = False
+        active_units[selected_index].is_selected = True
+
+        while not has_selected_unit:
+            self.flip_display(pause_button, active_units, selected_index, color)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if pause_button.checkForInput(pygame.mouse.get_pos()):
+                        pause_menu()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_LEFT:
+                        active_units[selected_index].is_selected = False
+                        selected_index = (selected_index - 1) % len(active_units)
+                        active_units[selected_index].is_selected = True
+                    elif event.key == pygame.K_RIGHT:
+                        active_units[selected_index].is_selected = False
+                        selected_index = (selected_index + 1) % len(active_units)
+                        active_units[selected_index].is_selected = True
+                    elif event.key == pygame.K_SPACE:
+                        has_selected_unit = True
+
+        self.move_unit(active_units[selected_index], opponents, pause_button)
+
+    def move_unit(self, unit, opponents, pause_button):
+        """Déplace l'unité sélectionnée."""
+        has_acted = False
+        while not has_acted:
             self.flip_display(pause_button)
-            while not has_acted:
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        pygame.quit()
-                        sys.exit()
-                    if event.type == pygame.MOUSEBUTTONDOWN:
-                        if pause_button.checkForInput(pygame.mouse.get_pos()):
-                            pause_menu()
-                    if event.type == pygame.KEYDOWN:
-                        dx, dy = 0, 0
-                        if event.key == pygame.K_LEFT:
-                            dx = -1
-                        elif event.key == pygame.K_RIGHT:
-                            dx = 1
-                        elif event.key == pygame.K_UP:
-                            dy = -1
-                        elif event.key == pygame.K_DOWN:
-                            dy = 1
-                        selected_unit.move(dx, dy)
-                        self.flip_display(pause_button)
-                        if event.key == pygame.K_SPACE:
-                            for opponent in opponents:
-                                if abs(selected_unit.x - opponent.x) <= 1 and abs(selected_unit.y - opponent.y) <= 1:
-                                    selected_unit.attack(opponent)
-                                    if opponent.health <= 0:
-                                        opponents.remove(opponent)
-                            has_acted = True
-                            selected_unit.is_selected = False
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if pause_button.checkForInput(pygame.mouse.get_pos()):
+                        pause_menu()
+                if event.type == pygame.KEYDOWN:
+                    dx, dy = 0, 0
+                    if event.key == pygame.K_LEFT:
+                        dx = -1
+                    elif event.key == pygame.K_RIGHT:
+                        dx = 1
+                    elif event.key == pygame.K_UP:
+                        dy = -1
+                    elif event.key == pygame.K_DOWN:
+                        dy = 1
+                    unit.move(dx, dy)
+                    self.flip_display(pause_button)
+                    if event.key == pygame.K_SPACE:
+                        for opponent in opponents:
+                            if abs(unit.x - opponent.x) <= 1 and abs(unit.y - opponent.y) <= 1:
+                                unit.attack(opponent)
+                                if opponent.health <= 0:
+                                    opponents.remove(opponent)
+                        has_acted = True
 
-    def flip_display(self, pause_button):
-        """Affiche le plateau de jeu et les boutons."""
+    def flip_display(self, pause_button, active_units=None, selected_index=None, color=None):
+        """Affiche le plateau de jeu avec le curseur."""
         self.screen.blit(MAP, (0, 0))
         for x in range(0, WIDTH, CELL_SIZE):
             for y in range(0, HEIGHT, CELL_SIZE):
                 rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
                 pygame.draw.rect(self.screen, WHITE, rect, 1)
-        self.hostage.draw(self.screen)
+
         for unit in self.player_units + self.enemy_units:
             unit.draw(self.screen)
+
+        self.hostage.draw(self.screen)
+
+        if active_units is not None and selected_index is not None:
+            selected_unit = active_units[selected_index]
+            rect = pygame.Rect(selected_unit.x * CELL_SIZE, selected_unit.y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+            pygame.draw.rect(self.screen, color, rect, 2)
+
         pause_button.changeColor(pygame.mouse.get_pos())
         pause_button.update(self.screen)
+
         pygame.display.flip()
 
 
@@ -121,24 +155,30 @@ def pause_menu():
     overlay = pygame.Surface((WIDTH, HEIGHT))
     overlay.set_alpha(150)
     overlay.fill((50, 50, 50))
+
+    # Boutons dans le menu pause
+    resume_button = Button(None, (WIDTH // 2, HEIGHT // 2 - 50), "REPRENDRE", get_font(40), "White", "Green")
+    menu_button = Button(None, (WIDTH // 2, HEIGHT // 2 + 50), "MENU PRINCIPAL", get_font(40), "White", "Green")
+    quit_button = Button(None, (WIDTH // 2, HEIGHT // 2 + 150), "QUITTER LE JEU", get_font(40), "White", "Green")
+
     while True:
         SCREEN.blit(overlay, (0, 0))
-        pause_text = get_font(45).render("Pause", True, "White")
-        SCREEN.blit(pause_text, (WIDTH // 2 - pause_text.get_width() // 2, HEIGHT // 2 - 200))
-        resume_button = Button(None, (WIDTH // 2, HEIGHT // 2 - 50), "RESUME", get_font(40), "White", "Green")
-        menu_button = Button(None, (WIDTH // 2, HEIGHT // 2 + 50), "MENU", get_font(40), "White", "Green")
-        quit_button = Button(None, (WIDTH // 2, HEIGHT // 2 + 150), "QUIT", get_font(40), "White", "Green")
+        pause_text = get_font(45).render("Jeu mis en pause", True, "White")
+        SCREEN.blit(pause_text, (WIDTH // 2 - pause_text.get_width() // 2, HEIGHT // 2 - 300))
+
+        # Afficher les boutons
         mouse_pos = pygame.mouse.get_pos()
         for button in [resume_button, menu_button, quit_button]:
             button.changeColor(mouse_pos)
             button.update(SCREEN)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if resume_button.checkForInput(mouse_pos):
-                    return
+                    return  # Quitter le menu pause et reprendre
                 if menu_button.checkForInput(mouse_pos):
                     main_menu()
                 if quit_button.checkForInput(mouse_pos):
@@ -151,36 +191,40 @@ def play():
     """Lance le jeu."""
     screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
     game = Game(screen)
+
+    # Bouton Pause
     pause_button = Button(pygame.image.load("assets/Pause Rect.png"), (WIDTH - 150, 50),
                           "PAUSE", get_font(20), "#d7fcd4", "White")
+
+    attacker_color = (255, 0, 0)  # Rouge pour les attaquants
+    defender_color = (0, 0, 255)  # Bleu pour les défenseurs
+
     while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if pause_button.checkForInput(pygame.mouse.get_pos()):
-                    pause_menu()
-        game.handle_turn(game.player_units, game.enemy_units, pause_button)
-        game.handle_turn(game.enemy_units, game.player_units, pause_button)
+        game.handle_turn(game.player_units, game.enemy_units, pause_button, attacker_color)
+        game.handle_turn(game.enemy_units, game.player_units, pause_button, defender_color)
 
 
 def main_menu():
     """Affiche le menu principal."""
     bg_image = pygame.image.load("assets/Background.png")
     bg_image = pygame.transform.scale(bg_image, (WIDTH, HEIGHT))
-    play_pos = (WIDTH // 2 - 100, HEIGHT // 2 + 50)
-    help_pos = (WIDTH // 2 - 100, HEIGHT // 2 + 150)
-    quit_pos = (WIDTH // 2 - 100, HEIGHT // 2 + 250)
-    PLAY_BUTTON = Button(pygame.image.load("assets/Play Rect.png"), play_pos, "PLAY", get_font(40), "#d7fcd4", "White")
-    HELP_BUTTON = Button(pygame.image.load("assets/Options Rect.png"), help_pos, "HELP", get_font(40), "#d7fcd4", "White")
-    QUIT_BUTTON = Button(pygame.image.load("assets/Quit Rect.png"), quit_pos, "QUIT", get_font(40), "#d7fcd4", "White")
+
+    play_pos = (WIDTH // 2 - 40 , HEIGHT // 2 + 200)
+    help_pos = (play_pos[0] - 200, HEIGHT // 2 + 200)
+    quit_pos = (play_pos[0] + 200, HEIGHT // 2 + 200)
+
+    PLAY_BUTTON = Button(pygame.image.load("assets/Play Rect.png"), play_pos, "JOUER", get_font(35), "#d7fcd4", "White")
+    HELP_BUTTON = Button(pygame.image.load("assets/Options Rect.png"), help_pos, "REGLES", get_font(35), "#d7fcd4", "White")
+    QUIT_BUTTON = Button(pygame.image.load("assets/Quit Rect.png"), quit_pos, "QUITTER", get_font(35), "#d7fcd4", "White")
+
     while True:
         SCREEN.blit(bg_image, (0, 0))
         MENU_MOUSE_POS = pygame.mouse.get_pos()
+
         for button in [PLAY_BUTTON, HELP_BUTTON, QUIT_BUTTON]:
             button.changeColor(MENU_MOUSE_POS)
             button.update(SCREEN)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -189,29 +233,10 @@ def main_menu():
                 if PLAY_BUTTON.checkForInput(MENU_MOUSE_POS):
                     play()
                 if HELP_BUTTON.checkForInput(MENU_MOUSE_POS):
-                    rules()
+                    pause_menu()
                 if QUIT_BUTTON.checkForInput(MENU_MOUSE_POS):
                     pygame.quit()
                     sys.exit()
-        pygame.display.update()
-
-
-def rules():
-    """Affiche les règles du jeu."""
-    while True:
-        SCREEN.fill("white")
-        rules_text = get_font(45).render("Voici les règles.", True, "Black")
-        back_button = Button(None, (WIDTH // 2, HEIGHT // 2 + 100), "BACK", get_font(40), "Black", "Green")
-        SCREEN.blit(rules_text, (WIDTH // 2 - 200, HEIGHT // 2 - 100))
-        back_button.changeColor(pygame.mouse.get_pos())
-        back_button.update(SCREEN)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if back_button.checkForInput(pygame.mouse.get_pos()):
-                    main_menu()
         pygame.display.update()
 
 

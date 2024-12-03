@@ -22,37 +22,12 @@ YELLOW = (255, 255, 0)  # Couleur pour l'otage
 
 
 class Unit:
-    """
-    Classe pour représenter une unité.
-    """
-
+    """Classe pour représenter une unité."""
+    
     def __init__(self, x, y, health, attack_power, defense, speed, team, role, image_path):
-        """
-        Initialise une unité.
-
-        Paramètres
-        ----------
-        x : int
-            Position en x de l'unité.
-        y : int
-            Position en y de l'unité.
-        health : int
-            Points de vie de l'unité.
-        attack_power : int
-            Puissance d'attaque de l'unité.
-        defense : int
-            Défense de l'unité.
-        speed : int
-            Vitesse de déplacement de l'unité.
-        team : str
-            Équipe de l'unité ('player' ou 'enemy').
-        role : str
-            Rôle spécifique de l'unité.
-        image_path : str
-            Chemin vers l'image de l'unité.
-        """
         self.x = x
         self.y = y
+        self.max_health = health  # Stocke le maximum de points de vie
         self.health = health
         self.attack_power = attack_power
         self.defense = defense
@@ -60,9 +35,9 @@ class Unit:
         self.team = team
         self.role = role
         self.is_selected = False
-        self.image = pygame.image.load(image_path)  # Charge l'image
-        self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE))  # Redimensionne l'image
-
+        self.image = pygame.image.load(image_path)
+        self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE))
+    
     def move(self, dx, dy):
         """Déplace l'unité dans la grille."""
         if 0 <= self.x + dx < GRID_SIZE_X and 0 <= self.y + dy < GRID_SIZE_Y:
@@ -72,13 +47,26 @@ class Unit:
     def attack(self, target):
         """Attaque une cible."""
         damage = max(0, self.attack_power - target.defense)
-        target.health -= damage
+        target.health = max(0, target.health - damage)  # Empêche la santé de devenir négative
 
     def draw(self, screen):
         """Affiche l'unité sur l'écran."""
-        screen.blit(self.image, (self.x * CELL_SIZE, self.y * CELL_SIZE))  # Affiche l'image de l'unité
-        if self.is_selected:
-            pygame.draw.rect(screen, GREEN, (self.x * CELL_SIZE, self.y * CELL_SIZE, CELL_SIZE, CELL_SIZE), 2)  # Encadre l'unité sélectionnée
+        screen.blit(self.image, (self.x * CELL_SIZE, self.y * CELL_SIZE))
+        self.draw_health_bar(screen)  # Appelle la méthode pour dessiner la barre de vie
+
+    def draw_health_bar(self, screen):
+        """Affiche la barre de vie au-dessus de l'unité."""
+        bar_width = CELL_SIZE  # La largeur de la barre de vie est égale à la taille d'une cellule
+        bar_height = 5  # Hauteur de la barre de vie
+        bar_x = self.x * CELL_SIZE  # Coordonnée X de la barre
+        bar_y = self.y * CELL_SIZE - 10  # Coordonnée Y de la barre (au-dessus de l'unité)
+
+        # Proportion de santé restante
+        health_ratio = self.health / self.max_health
+
+        # Rectangle pour la barre de vie
+        pygame.draw.rect(screen, (255, 0, 0), (bar_x, bar_y, bar_width, bar_height))  # Barre rouge (fond)
+        pygame.draw.rect(screen, (0, 255, 0), (bar_x, bar_y, bar_width * health_ratio, bar_height))  # Barre verte
 
 
 class Hostage:
