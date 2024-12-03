@@ -151,7 +151,7 @@ class Game:
 
 
 def pause_menu():
-    """Affiche le menu pause avec un fond semi-transparent."""
+    """Affiche le menu pause avec un fond gris."""
     overlay = pygame.Surface((WIDTH, HEIGHT))
     overlay.set_alpha(150)
     overlay.fill((50, 50, 50))
@@ -213,9 +213,9 @@ def main_menu():
     help_pos = (play_pos[0] - 200, HEIGHT // 2 + 200)
     quit_pos = (play_pos[0] + 200, HEIGHT // 2 + 200)
 
-    PLAY_BUTTON = Button(pygame.image.load("assets/Play Rect.png"), play_pos, "JOUER", get_font(35), "#d7fcd4", "White")
-    HELP_BUTTON = Button(pygame.image.load("assets/Options Rect.png"), help_pos, "REGLES", get_font(35), "#d7fcd4", "White")
-    QUIT_BUTTON = Button(pygame.image.load("assets/Quit Rect.png"), quit_pos, "QUITTER", get_font(35), "#d7fcd4", "White")
+    PLAY_BUTTON = Button(pygame.image.load("assets/Play Rect.png"), play_pos, "JOUER", get_font(35), "#d7fcd4", "Green")
+    HELP_BUTTON = Button(pygame.image.load("assets/Options Rect.png"), help_pos, "REGLES", get_font(35), "#d7fcd4", "Green")
+    QUIT_BUTTON = Button(pygame.image.load("assets/Quit Rect.png"), quit_pos, "QUITTER", get_font(35), "#d7fcd4", "Green")
 
     while True:
         SCREEN.blit(bg_image, (0, 0))
