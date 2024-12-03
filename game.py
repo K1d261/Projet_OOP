@@ -1,11 +1,20 @@
 import pygame
 from unit import Unit
 
-# Constantes pour la grille
-GRID_SIZE = 8
-CELL_SIZE = 60
-WIDTH = GRID_SIZE * CELL_SIZE
-HEIGHT = GRID_SIZE * CELL_SIZE
+pygame.init()
+
+# Obtenir la taille de l'écran
+screen_info = pygame.display.Info()
+WIDTH = screen_info.current_w
+HEIGHT = screen_info.current_h
+
+# Choisir la taille des cellules
+CELL_SIZE = 40  # Taille de chaque cellule de la grille
+
+# Calculer le nombre de cellules qui peuvent tenir sur l'écran
+GRID_SIZE_X = WIDTH // CELL_SIZE  # Nombre de cellules sur l'axe X (horizontal)
+GRID_SIZE_Y = HEIGHT // CELL_SIZE  # Nombre de cellules sur l'axe Y (vertical)
+
 
 # Couleurs pour l'affichage
 WHITE = (255, 255, 255)
@@ -19,23 +28,30 @@ class Game:
 
     def __init__(self, screen):
         self.screen = screen
-
+        axel_path = [r"C:\Users\Axel\OneDrive\Bureau\Cours\M1\Python\Projet_OOP\Operators\Thermite.png",r'C:\Users\Axel\OneDrive\Bureau\Cours\M1\Python\Projet_OOP\Operators\Glaz.png',
+                     r'C:\Users\Axel\OneDrive\Bureau\Cours\M1\Python\Projet_OOP\Operators\Fuze.png',r'C:\Users\Axel\OneDrive\Bureau\Cours\M1\Python\Projet_OOP\Operators\Montagne.png',
+                     r'C:\Users\Axel\OneDrive\Bureau\Cours\M1\Python\Projet_OOP\Operators\Doc.png',r'C:\Users\Axel\OneDrive\Bureau\Cours\M1\Python\Projet_OOP\Operators\Jackal.png',
+                     r'C:\Users\Axel\OneDrive\Bureau\Cours\M1\Python\Projet_OOP\Operators\Smoke.png',r'C:\Users\Axel\OneDrive\Bureau\Cours\M1\Python\Projet_OOP\Operators\Jaeger.png',
+                     r'C:\Users\Axel\OneDrive\Bureau\Cours\M1\Python\Projet_OOP\Operators\Caveira.png',r'C:\Users\Axel\OneDrive\Bureau\Cours\M1\Python\Projet_OOP\Operators\Kapkan.png']
+        amine_path = []
+        im_path = [axel_path,amine_path]
+        id = 0 #Axel 0 et Amine 1
         # Attaquants (Joueur 1)
         self.player_units = [
-            Unit(0, 0, 120, 50, 50, 2, 'player', 'Thermite'),
-            Unit(0, 1, 100, 70, 30, 3, 'player', 'Glaz'),
-            Unit(0, 2, 120, 60, 30, 2, 'player', 'Fuze'),
-            Unit(0, 3, 200, 40, 75, 1, 'player', 'Montagne'),
-            Unit(0, 4, 120, 50, 75, 3, 'player', 'Doc')
+            Unit(0, 0, 120, 50, 50, 2, 'player', 'Thermite',im_path[id][0]),
+            Unit(0, 1, 100, 70, 30, 3, 'player', 'Glaz',im_path[id][1]),
+            Unit(0, 2, 120, 60, 30, 2, 'player', 'Fuze',im_path[id][2]),
+            Unit(0, 3, 200, 40, 75, 1, 'player', 'Montagne',im_path[id][3]),
+            Unit(0, 4, 120, 50, 75, 3, 'player', 'Doc',im_path[id][4])
         ]
 
         # Défenseurs (Joueur 2)
         self.enemy_units = [
-            Unit(7, 0, 120, 50, 50, 2, 'enemy', 'Jackal'),
-            Unit(7, 1, 100, 60, 30, 3, 'enemy', 'Smoke'),
-            Unit(7, 2, 120, 40, 30, 3, 'enemy', 'Jaeger'),
-            Unit(7, 3, 100, 80, 50, 4, 'enemy', 'Caveira'),
-            Unit(7, 4, 120, 70, 75, 2, 'enemy', 'Kapkan')
+            Unit(7, 0, 120, 50, 50, 2, 'enemy', 'Jackal',im_path[id][5]),
+            Unit(7, 1, 100, 60, 30, 3, 'enemy', 'Smoke',im_path[id][6]),
+            Unit(7, 2, 120, 40, 30, 3, 'enemy', 'Jaeger',im_path[id][7]),
+            Unit(7, 3, 100, 80, 50, 4, 'enemy', 'Caveira',im_path[id][8]),
+            Unit(7, 4, 120, 70, 75, 2, 'enemy', 'Kapkan',im_path[id][9])
         ]
 
     def handle_turn(self, units, opponents):
@@ -99,8 +115,8 @@ class Game:
 
 def main():
     """Point d'entrée principal."""
-    pygame.init()
-    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    
+    screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
     pygame.display.set_caption("Jeu de stratégie")
 
     game = Game(screen)
@@ -112,6 +128,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-#test commit2

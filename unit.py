@@ -1,8 +1,20 @@
 import pygame
 
 # Constantes pour l'affichage
-GRID_SIZE = 8
-CELL_SIZE = 60
+pygame.init()
+
+# Obtenir la taille de l'écran
+screen_info = pygame.display.Info()
+WIDTH = screen_info.current_w
+HEIGHT = screen_info.current_h
+
+# Choisir la taille des cellules
+CELL_SIZE = 40  # Taille de chaque cellule de la grille
+
+# Calculer le nombre de cellules qui peuvent tenir sur l'écran
+GRID_SIZE_X = WIDTH // CELL_SIZE  # Nombre de cellules sur l'axe X (horizontal)
+GRID_SIZE_Y = HEIGHT // CELL_SIZE  # Nombre de cellules sur l'axe Y (vertical)
+
 BLUE = (0, 0, 255)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
@@ -53,7 +65,7 @@ class Unit:
 
     def move(self, dx, dy):
         """Déplace l'unité dans la grille."""
-        if 0 <= self.x + dx < GRID_SIZE and 0 <= self.y + dy < GRID_SIZE:
+        if 0 <= self.x + dx < GRID_SIZE_X and 0 <= self.y + dy < GRID_SIZE_Y:
             self.x += dx
             self.y += dy
 
