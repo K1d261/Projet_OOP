@@ -119,6 +119,8 @@ def main():
     screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
     pygame.display.set_caption("Jeu de stratégie")
 
+    
+    
     game = Game(screen)
 
     while True:
