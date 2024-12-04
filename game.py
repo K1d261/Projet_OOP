@@ -35,7 +35,7 @@ def get_font(size):
 
 
 def pause_menu():
-    """Affiche le menu pause avec un fond semi-transparent."""
+    """Affiche le menu pause avec un fond gris."""
     overlay = pygame.Surface((WIDTH, HEIGHT))
     overlay.set_alpha(150)
     overlay.fill((50, 50, 50))
