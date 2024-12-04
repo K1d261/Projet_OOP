@@ -15,11 +15,6 @@ CELL_SIZE = 40  # Taille de chaque cellule de la grille
 GRID_SIZE_X = WIDTH // CELL_SIZE  # Nombre de cellules sur l'axe X (horizontal)
 GRID_SIZE_Y = HEIGHT // CELL_SIZE  # Nombre de cellules sur l'axe Y (vertical)
 
-BLUE = (0, 0, 255)
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-YELLOW = (255, 255, 0)  # Couleur pour l'otage
-
 
 class Unit:
     """Classe pour représenter une unité."""
@@ -35,12 +30,26 @@ class Unit:
         self.team = team
         self.role = role
         self.is_selected = False
+        self.image_path = image_path  # Stocke le chemin de l'image
         self.image = pygame.image.load(image_path)
-        self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE))
+        self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE))  # Redimensionne l'image pour l'affichage dans la grille
     
-    def move(self, dx, dy):
-        """Déplace l'unité dans la grille."""
-        if 0 <= self.x + dx < GRID_SIZE_X and 0 <= self.y + dy < GRID_SIZE_Y:
+    def move(self, dx, dy, grid_width, grid_height):
+        """
+        Déplace l'unité dans la grille en respectant les limites.
+
+        Paramètres
+        ----------
+        dx : int
+            Déplacement en x (-1, 0 ou 1).
+        dy : int
+            Déplacement en y (-1, 0 ou 1).
+        grid_width : int
+            Nombre total de cellules sur l'axe X.
+        grid_height : int
+            Nombre total de cellules sur l'axe Y.
+        """
+        if 0 <= self.x + dx < grid_width and 0 <= self.y + dy < grid_height:
             self.x += dx
             self.y += dy
 
