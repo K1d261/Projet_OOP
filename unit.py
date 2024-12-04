@@ -31,7 +31,7 @@ class Unit:
         self.health = health
         self.attack_power = attack_power
         self.defense = defense
-        self.speed = speed
+        self.speed = speed #nb de case
         self.team = team
         self.role = role
         self.is_selected = False

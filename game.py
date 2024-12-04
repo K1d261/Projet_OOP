@@ -36,6 +36,8 @@ class Game:
 
     def __init__(self, screen):
         self.screen = screen
+
+        r"""
         axel_path = [
             r"C:\Users\amine\Desktop\Projet Python\Projet_OOP\Operators\Thermite.png",
             r'C:\Users\amine\Desktop\Projet Python\Projet_OOP\Operators\Glaz.png',
@@ -48,6 +50,23 @@ class Game:
             r'C:\Users\amine\Desktop\Projet Python\Projet_OOP\Operators\Caveira.png',
             r'C:\Users\amine\Desktop\Projet Python\Projet_OOP\Operators\Kapkan.png'
         ]
+    """
+        axel_path = [
+            r"C:\Users\Axel\OneDrive\Bureau\Cours\M1\Python\Projet_OOP\Operators\Thermite.png",
+            r'C:\Users\Axel\OneDrive\Bureau\Cours\M1\Python\Projet_OOP\Operators\Glaz.png',
+            r'C:\Users\Axel\OneDrive\Bureau\Cours\M1\Python\Projet_OOP\Operators\Fuze.png',
+            r'C:\Users\Axel\OneDrive\Bureau\Cours\M1\Python\Projet_OOP\Operators\Montagne.png',
+            r'C:\Users\Axel\OneDrive\Bureau\Cours\M1\Python\Projet_OOP\Operators\Doc.png',
+            r'C:\Users\Axel\OneDrive\Bureau\Cours\M1\Python\Projet_OOP\Operators\Jackal.png',
+            r'C:\Users\Axel\OneDrive\Bureau\Cours\M1\Python\Projet_OOP\Operators\Smoke.png',
+            r'C:\Users\Axel\OneDrive\Bureau\Cours\M1\Python\Projet_OOP\Operators\Jaeger.png',
+            r'C:\Users\Axel\OneDrive\Bureau\Cours\M1\Python\Projet_OOP\Operators\Caveira.png',
+            r'C:\Users\Axel\OneDrive\Bureau\Cours\M1\Python\Projet_OOP\Operators\Kapkan.png'
+        ]
+        
+
+
+
         self.player_units = [
             Unit(0, 0, 120, 50, 50, 2, 'player', 'Thermite', axel_path[0]),
             Unit(0, 1, 100, 70, 30, 3, 'player', 'Glaz', axel_path[1]),
@@ -63,7 +82,12 @@ class Game:
             Unit(7, 4, 120, 70, 75, 2, 'enemy', 'Kapkan', axel_path[9])
         ]
         self.hostage = Hostage(GRID_SIZE_X // 2, GRID_SIZE_Y // 2,
-                               r"C:\Users\amine\Desktop\Projet Python\Projet_OOP\Operators\Hostage.png")
+                               r'C:\Users\Axel\OneDrive\Bureau\Cours\M1\Python\Projet_OOP\Operators\Kapkan.png')
+        #r'C:\Users\Axel\OneDrive\Bureau\Cours\M1\Python\Projet_OOP\Operators\Kapkan.png'
+        #r"C:\Users\amine\Desktop\Projet Python\Projet_OOP\Operators\Hostage.png"
+
+        self.highlighted_cells = [] # garde les cases accessibles
+
 
     def handle_turn(self, active_units, opponents, pause_button, color):
         """Gère un tour avec sélection d'unité."""
@@ -97,6 +121,8 @@ class Game:
     def move_unit(self, unit, opponents, pause_button):
         """Déplace l'unité sélectionnée."""
         has_acted = False
+        initial_position = (unit.x, unit.y)
+
         while not has_acted:
             self.flip_display(pause_button)
             for event in pygame.event.get():
@@ -116,8 +142,25 @@ class Game:
                         dy = -1
                     elif event.key == pygame.K_DOWN:
                         dy = 1
-                    unit.move(dx, dy)
-                    self.flip_display(pause_button)
+
+                    # Si aucun déplacement, on ne fait rien
+                    if dx == 0 and dy == 0:
+                        continue
+
+                    # Calculer la nouvelle position
+                    new_x = unit.x + dx
+                    new_y = unit.y + dy
+
+                    # Vérifier si le déplacement est dans les limites du rayon (vérification de la distance)
+                    distance_from_start = abs(new_x - initial_position[0]) + abs(new_y - initial_position[1])
+
+                    if distance_from_start <= unit.speed:
+                        # Appliquer le mouvement uniquement si on est dans les limites du rayon
+                        unit.move(dx, dy)
+                        self.flip_display(pause_button)  # Met à jour l'affichage après un mouvement valide
+                    
+
+
                     if event.key == pygame.K_SPACE:
                         for opponent in opponents:
                             if abs(unit.x - opponent.x) <= 1 and abs(unit.y - opponent.y) <= 1:
@@ -127,27 +170,58 @@ class Game:
                         has_acted = True
 
     def flip_display(self, pause_button, active_units=None, selected_index=None, color=None):
-        """Affiche le plateau de jeu avec le curseur."""
+        """Affiche le plateau de jeu avec le curseur et surligne les cases accessibles."""
+        # Affichage de la carte de fond
         self.screen.blit(MAP, (0, 0))
+    
+        # Dessin de la grille
         for x in range(0, WIDTH, CELL_SIZE):
             for y in range(0, HEIGHT, CELL_SIZE):
                 rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
                 pygame.draw.rect(self.screen, WHITE, rect, 1)
-
+    
+        # Dessin des unités
         for unit in self.player_units + self.enemy_units:
             unit.draw(self.screen)
 
+        # Dessin de l'otage
         self.hostage.draw(self.screen)
 
+        # Surlignage des cases accessibles pour l'unité sélectionnée
         if active_units is not None and selected_index is not None:
             selected_unit = active_units[selected_index]
+            if not self.highlighted_cells:
+                self.highlighted_cells.clear() #Réinitialise les cases surlignés
+
+            for dx in range(-selected_unit.speed, selected_unit.speed + 1):
+                for dy in range(-selected_unit.speed, selected_unit.speed + 1):
+                    # Vérifiez que la distance de Manhattan est respectée
+                    if abs(dx) + abs(dy) <= selected_unit.speed:
+                        new_x = selected_unit.x + dx
+                        new_y = selected_unit.y + dy
+                        # Vérifiez que la position est sur la grille
+                        if 0 <= new_x < GRID_SIZE_X and 0 <= new_y < GRID_SIZE_Y:
+                            # Enregistrer les cases accessibles dans une liste
+                            self.highlighted_cells.append((new_x, new_y))
+            
+
+            for cell in self.highlighted_cells:
+            # Dessin du contour autour de l'unité sélectionnée
+                rect = pygame.Rect(cell[0] * CELL_SIZE, cell[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+                pygame.draw.rect(self.screen, (255, 255, 0), rect, 2)  # Surlignage en jaune
+
+
+        # Dessin du contour autour de l'unité sélectionnée
             rect = pygame.Rect(selected_unit.x * CELL_SIZE, selected_unit.y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
             pygame.draw.rect(self.screen, color, rect, 2)
 
+        # Mise à jour et affichage du bouton pause
         pause_button.changeColor(pygame.mouse.get_pos())
         pause_button.update(self.screen)
 
+        # Rafraîchissement de l'écran
         pygame.display.flip()
+
 
 
 def pause_menu():
