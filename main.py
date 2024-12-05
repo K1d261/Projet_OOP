@@ -241,6 +241,8 @@ class Game:
         has_selected_unit = False
         selected_action = "move"  # Action par défaut
         movement_range = None  # Zones accessibles
+        actions = ["attack", "move", "special"]  # Liste des actions disponibles
+        action_index = 1  # Index pour "move"
 
         while True:
             selected_unit = active_units[selected_index]
@@ -258,11 +260,11 @@ class Game:
                 color,
                 movement_range,
                 card=card,
-                selected_action=selected_action  # Passer l'action sélectionnée
+                selected_action=actions[action_index]  # Passer l'action sélectionnée
             )
 
             # Impressions pour suivre l'état actuel
-            print(f"Unité sélectionnée : {selected_unit.role} | Action sélectionnée : {selected_action}")
+            print(f"Unité sélectionnée : {selected_unit.role} | Action sélectionnée : {actions[action_index]}")
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -284,22 +286,26 @@ class Game:
                             has_selected_unit = True
                             print(f"Unité verrouillée pour sélection : {selected_index}")
                     else:
-                        # Navigation entre "move" et "attack" après sélection
+                        # Navigation entre les actions après sélection
                         if event.key == pygame.K_LEFT:
-                            selected_action = "attack"
-                            print(f"Action modifiée : {selected_action}")
+                            action_index = (action_index - 1) % len(actions)
+                            print(f"Action modifiée : {actions[action_index]}")
                         elif event.key == pygame.K_RIGHT:
-                            selected_action = "move"
-                            print(f"Action modifiée : {selected_action}")
+                            action_index = (action_index + 1) % len(actions)
+                            print(f"Action modifiée : {actions[action_index]}")
                         elif event.key == pygame.K_SPACE:
-                            print(f"Action confirmée : {selected_action}")
-                            if selected_action == "move":
+                            print(f"Action confirmée : {actions[action_index]}")
+                            if actions[action_index] == "move":
                                 # Déplacer l'unité
                                 self.move_unit(selected_unit, opponents, pause_button, movement_range)
                                 return  # Fin du tour
-                            elif selected_action == "attack":
+                            elif actions[action_index] == "attack":
                                 print("Mode attaque sélectionné (non implémenté)")
                                 return  # Fin du tour
+                            elif actions[action_index] == "special":
+                                print("Mode spécial sélectionné (non implémenté)")
+                                return  # Fin du tour
+
 
     def move_unit(self, unit, opponents, pause_button, movement_range):
         """Déplace l'unité sélectionnée."""
@@ -380,6 +386,7 @@ class Game:
         pause_button.changeColor(pygame.mouse.get_pos())
         pause_button.update(self.screen)
         pygame.display.flip()
+
 
 
 
