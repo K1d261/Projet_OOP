@@ -220,6 +220,40 @@ class Game:
 
         # Créer l'otage au centre de la grille
         self.hostage = Hostage(GRID_SIZE_X // 2, GRID_SIZE_Y // 2, r"assets/Hostage.png")
+    def execute_special(self, unit, opponents):
+        """Exécute l'attaque spéciale de l'unité."""
+        print(f"{unit.role} utilise son attaque spéciale !")
+        special_range = self.get_movement_range(unit)  # Adapter pour définir la portée spéciale si nécessaire
+        selected_x, selected_y = unit.x, unit.y  # Initialiser à la position actuelle
+
+        while True:
+            # Afficher les cases de portée spéciale
+            self.flip_display(pause_button=None, active_units=[unit], selected_index=0, color=(255, 165, 0), movement_range=special_range)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_LEFT:
+                        if (selected_x - 1, selected_y) in special_range:
+                            selected_x -= 1
+                    elif event.key == pygame.K_RIGHT:
+                        if (selected_x + 1, selected_y) in special_range:
+                            selected_x += 1
+                    elif event.key == pygame.K_UP:
+                        if (selected_x, selected_y - 1) in special_range:
+                            selected_y -= 1
+                    elif event.key == pygame.K_DOWN:
+                        if (selected_x, selected_y + 1) in special_range:
+                            selected_y += 1
+                    elif event.key == pygame.K_SPACE:
+                        # Vérifier s'il y a une cible sur la case
+                        for opponent in opponents:
+                            if opponent.x == selected_x and opponent.y == selected_y:
+                                unit.special_ability(opponent)  # Appelle la capacité spéciale
+                                print(f"{unit.role} a utilisé son attaque spéciale sur {opponent.role} !")
+                                return
 
     def get_movement_range(self, unit):
         """
@@ -377,6 +411,13 @@ class Game:
                 CELL_SIZE
             )
             pygame.draw.rect(self.screen, (255, 255, 0), rect, 3)  # Contour jaune pour l'unité sélectionnée
+
+        # Dessiner les zones de portée spéciale
+        if movement_range and color == (255, 165, 0):  # Orange pour la portée spéciale
+            for cell in movement_range:
+                rect = pygame.Rect(cell[0] * CELL_SIZE, cell[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+                pygame.draw.rect(self.screen, (255, 165, 0), rect, 2)
+
 
         # Dessiner la carte si elle est passée en paramètre
         if card:
