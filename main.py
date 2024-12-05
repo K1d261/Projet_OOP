@@ -27,7 +27,7 @@ WIDTH = screen_info.current_w
 HEIGHT = screen_info.current_h
 
 # Taille des cellules
-CELL_SIZE = 60
+CELL_SIZE = 40
 
 # Calculer le nombre de cellules qui peuvent tenir sur l'écran
 GRID_SIZE_X = WIDTH // CELL_SIZE  # Nombre de cellules sur l'axe X (horizontal)
@@ -39,7 +39,7 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
 # Charger les actifs
-MAP = pygame.image.load("assets/Map.png")
+MAP = pygame.image.load("assets/pixelmap.png")
 MAP = pygame.transform.scale(MAP, (WIDTH, HEIGHT))
 CARD_BACKGROUND = pygame.image.load("assets/Card.png")
 CARD_BACKGROUND = pygame.transform.scale(CARD_BACKGROUND, (350, 650))
