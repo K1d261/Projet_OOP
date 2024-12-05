@@ -9,7 +9,7 @@ WIDTH = screen_info.current_w
 HEIGHT = screen_info.current_h
 
 # Choisir la taille des cellules
-CELL_SIZE = 40  # Taille de chaque cellule de la grille
+CELL_SIZE = 60  # Taille de chaque cellule de la grille
 
 # Calculer le nombre de cellules qui peuvent tenir sur l'écran
 GRID_SIZE_X = WIDTH // CELL_SIZE  # Nombre de cellules sur l'axe X (horizontal)
