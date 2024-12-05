@@ -300,31 +300,41 @@ class Game:
 
 
 
+    # Ajout des modifications pour gérer correctement selected_action dans tous les appels
+
     def handle_turn(self, active_units, opponents, pause_button, color):
         """Gère un tour avec sélection, choix d'action, déplacement et attaque."""
         selected_index = 0
         has_selected_unit = False
         selected_action = "move"  # Action par défaut
         movement_range = None  # Zones accessibles
+        attack_range = None  # Zones accessibles pour l'attaque
         actions = ["attack", "move", "special"]  # Liste des actions disponibles
         action_index = 1  # Index pour "move"
-        target_index = 0  # Index de la cible lors de l'attaque
 
         while True:
             selected_unit = active_units[selected_index]
 
             # Si l'unité est sélectionnée, calculer les zones accessibles
             if has_selected_unit:
-                movement_range = self.get_movement_range(selected_unit)
+                if actions[action_index] == "move":
+                    movement_range = self.get_movement_range(selected_unit)
+                    attack_range = None
+                elif actions[action_index] == "attack":
+                    attack_range = self.get_attack_range(selected_unit)
+                    movement_range = None
+                else:
+                    movement_range = attack_range = None  # Pas de zone spécifique pour "special"
 
             # Afficher la carte et l'état actuel
             card = Card(selected_unit, self.screen)
             self.flip_display(
-                pause_button,
-                active_units,
-                selected_index,
-                color,
-                movement_range,
+                pause_button=pause_button,
+                active_units=active_units,
+                selected_index=selected_index,
+                color=color,
+                movement_range=movement_range,
+                attack_range=attack_range,
                 card=card,
                 selected_action=actions[action_index]  # Passer l'action sélectionnée
             )
@@ -365,6 +375,7 @@ class Game:
                                 return  # Fin du tour
 
 
+
     def move_unit(self, unit, opponents, pause_button, movement_range):
         """Déplace l'unité sélectionnée."""
         has_acted = False
@@ -402,12 +413,13 @@ class Game:
                     if event.key == pygame.K_SPACE:  # Terminer le tour
                         for opponent in opponents:
                             has_acted = True
-
     def flip_display(self, pause_button=None, active_units=None, selected_index=None, color=None, movement_range=None, attack_range=None, card=None, selected_action="move"):
         """Affiche l'état actuel de la grille et de l'interface."""
+        print(f"DEBUG: selected_action = {selected_action}")  # Debug: affiche l'action sélectionnée
+
         # Dessiner la carte de fond
         self.screen.blit(MAP, (0, 0))
-        
+
         # Dessiner la grille
         for x in range(0, WIDTH, CELL_SIZE):
             for y in range(0, HEIGHT, CELL_SIZE):
@@ -416,6 +428,7 @@ class Game:
 
         # Dessiner les zones accessibles pour le mouvement (jaune transparent)
         if movement_range and selected_action == "move":
+            print("DEBUG: Dessin des zones de mouvement (jaune)")
             for cell in movement_range:
                 jaune_clair = pygame.Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)  # Surface avec alpha
                 jaune_clair.fill((255, 255, 0, 128))  # Jaune transparent
@@ -423,6 +436,7 @@ class Game:
 
         # Dessiner les zones accessibles pour l'attaque (rouge transparent)
         if attack_range and selected_action == "attack":
+            print("DEBUG: Dessin des zones d'attaque (rouge)")
             for cell in attack_range:
                 rouge_clair = pygame.Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)  # Surface avec alpha
                 rouge_clair.fill((255, 0, 0, 128))  # Rouge transparent
@@ -445,7 +459,7 @@ class Game:
 
         # Dessiner la carte si elle est passée en paramètre
         if card:
-            print(f"flip_display : Transmission de l'action sélectionnée = {selected_action}")
+            print(f"DEBUG: Carte affichée avec action sélectionnée = {selected_action}")
             card.draw(50, HEIGHT - 250, selected_action)  # Passer selected_action
 
         # Gérer le bouton de pause
@@ -455,6 +469,7 @@ class Game:
 
         # Rafraîchir l'affichage
         pygame.display.flip()
+
 
 
 def play():

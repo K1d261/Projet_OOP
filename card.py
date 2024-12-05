@@ -9,9 +9,8 @@ class Card:
         self.background_color = (0, 0, 128)
         self.text_color = (255, 255, 255)
 
-    def draw(self, x, y, selected_action="move"):
-       
-
+    def draw(self, x, y, selected_action="attack", attack_range=None):
+        """Dessine la carte et les informations de l'unité."""
         # Dessiner le fond de la carte
         card_rect = pygame.Rect(x, y, self.width, self.height)
         pygame.draw.rect(self.screen, self.background_color, card_rect)
@@ -56,6 +55,12 @@ class Card:
             pygame.draw.rect(self.screen, (255, 0, 0), move_button, 3)
         elif selected_action == "attack":
             pygame.draw.rect(self.screen, (255, 0, 0), attack_button, 3)
+            # Dessiner la portée d'attaque
+            if attack_range:
+                for cell in attack_range:
+                    rouge_clair = pygame.Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)
+                    rouge_clair.fill((255, 0, 0, 128))  # Rouge transparent
+                    self.screen.blit(rouge_clair, (cell[0] * CELL_SIZE, cell[1] * CELL_SIZE))
         elif selected_action == "special":
             pygame.draw.rect(self.screen, (255, 0, 0), special_button, 3)
 
