@@ -68,7 +68,7 @@ class Unit:
         bar_width = CELL_SIZE  # La largeur de la barre de vie est égale à la taille d'une cellule
         bar_height = 5  # Hauteur de la barre de vie
         bar_x = self.x * CELL_SIZE  # Coordonnée X de la barre
-        bar_y = self.y * CELL_SIZE - 10  # Coordonnée Y de la barre (au-dessus de l'unité)
+        bar_y = self.y * CELL_SIZE  # Coordonnée Y de la barre (au-dessus de l'unité)
 
         # Proportion de santé restante
         health_ratio = self.health / self.max_health

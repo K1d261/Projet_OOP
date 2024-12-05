@@ -2,8 +2,24 @@ import pygame
 import sys
 from unit import Unit, Hostage
 from game_button import Button
-
+from card import Card
+from doc import Doc
+from montagne import Montagne
+from thermite import Thermite
+from fuze import Fuze
+from glaz import Glaz
+from jackal import Jackal
+from smoke import Smoke
+from jaeger import Jaeger
+from kapkan import Kapkan
+from caveira import Caveira
 pygame.init()
+
+#musique
+pygame.mixer.init()
+pygame.mixer.music.load("assets/Kill Again x Evil Empire.mp3")
+pygame.mixer.music.play(loops=-1,start=0.0, fade_ms=5000)
+
 
 # Obtenir la taille de l'écran
 screen_info = pygame.display.Info()
@@ -180,50 +196,6 @@ def rules():
         pygame.display.update()
 
 
-import pygame
-import sys
-from unit import Hostage
-from game_button import Button
-from doc import Doc
-from montagne import Montagne
-from thermite import Thermite
-from fuze import Fuze
-from glaz import Glaz
-from jackal import Jackal
-from smoke import Smoke
-from jaeger import Jaeger
-from kapkan import Kapkan
-
-pygame.init()
-
-# Obtenir la taille de l'écran
-screen_info = pygame.display.Info()
-WIDTH = screen_info.current_w
-HEIGHT = screen_info.current_h
-
-# Taille des cellules
-CELL_SIZE = 60
-
-# Calculer le nombre de cellules qui peuvent tenir sur l'écran
-GRID_SIZE_X = WIDTH // CELL_SIZE  # Nombre de cellules sur l'axe X (horizontal)
-GRID_SIZE_Y = HEIGHT // CELL_SIZE  # Nombre de cellules sur l'axe Y (vertical)
-
-# Couleurs
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-
-# Charger les actifs
-MAP = pygame.image.load("assets/Map.png")
-MAP = pygame.transform.scale(MAP, (WIDTH, HEIGHT))
-CARD_BACKGROUND = pygame.image.load("assets/Card.png")
-CARD_BACKGROUND = pygame.transform.scale(CARD_BACKGROUND, (350, 650))
-
-
-def get_font(size):
-    """Charge une police d'écriture."""
-    return pygame.font.Font("assets/font.ttf", size)
-
-
 class Game:
     """Classe pour gérer le jeu."""
 
@@ -242,7 +214,8 @@ class Game:
             Jackal(7, 0),
             Smoke(7, 1),
             Jaeger(7, 2),
-            Kapkan(7, 3)
+            Kapkan(7, 3),
+            Caveira(7,4)
         ]
 
         # Créer l'otage au centre de la grille
@@ -263,16 +236,33 @@ class Game:
         return movement_range
 
     def handle_turn(self, active_units, opponents, pause_button, color):
-        """Gère un tour avec sélection et déplacement d'une unité."""
+        """Gère un tour avec sélection, choix d'action et déplacement d'une unité."""
         selected_index = 0
         has_selected_unit = False
-        movement_range = None  # Zones disponibles pour l'unité sélectionnée
+        selected_action = "move"  # Action par défaut
+        movement_range = None  # Zones accessibles
 
-        # Sélection d'une unité
-        while not has_selected_unit:
+        while True:
             selected_unit = active_units[selected_index]
-            movement_range = self.get_movement_range(selected_unit)
-            self.flip_display(pause_button, active_units, selected_index, color, movement_range)
+
+            # Si l'unité est sélectionnée, calculer les zones accessibles
+            if has_selected_unit:
+                movement_range = self.get_movement_range(selected_unit)
+
+            # Afficher la carte et l'état actuel
+            card = Card(selected_unit, self.screen)
+            self.flip_display(
+                pause_button,
+                active_units,
+                selected_index,
+                color,
+                movement_range,
+                card=card,
+                selected_action=selected_action  # Passer l'action sélectionnée
+            )
+
+            # Impressions pour suivre l'état actuel
+            print(f"Unité sélectionnée : {selected_unit.role} | Action sélectionnée : {selected_action}")
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -282,15 +272,34 @@ class Game:
                     if pause_button.checkForInput(pygame.mouse.get_pos()):
                         pause_menu()
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_LEFT:
-                        selected_index = (selected_index - 1) % len(active_units)
-                    elif event.key == pygame.K_RIGHT:
-                        selected_index = (selected_index + 1) % len(active_units)
-                    elif event.key == pygame.K_SPACE:
-                        has_selected_unit = True
-
-        # Déplacement de l'unité sélectionnée
-        self.move_unit(active_units[selected_index], opponents, pause_button, movement_range)
+                    if not has_selected_unit:
+                        # Navigation entre les unités avant sélection
+                        if event.key == pygame.K_LEFT:
+                            selected_index = (selected_index - 1) % len(active_units)
+                            print(f"Changement d'unité : index = {selected_index}")
+                        elif event.key == pygame.K_RIGHT:
+                            selected_index = (selected_index + 1) % len(active_units)
+                            print(f"Changement d'unité : index = {selected_index}")
+                        elif event.key == pygame.K_SPACE:
+                            has_selected_unit = True
+                            print(f"Unité verrouillée pour sélection : {selected_index}")
+                    else:
+                        # Navigation entre "move" et "attack" après sélection
+                        if event.key == pygame.K_LEFT:
+                            selected_action = "attack"
+                            print(f"Action modifiée : {selected_action}")
+                        elif event.key == pygame.K_RIGHT:
+                            selected_action = "move"
+                            print(f"Action modifiée : {selected_action}")
+                        elif event.key == pygame.K_SPACE:
+                            print(f"Action confirmée : {selected_action}")
+                            if selected_action == "move":
+                                # Déplacer l'unité
+                                self.move_unit(selected_unit, opponents, pause_button, movement_range)
+                                return  # Fin du tour
+                            elif selected_action == "attack":
+                                print("Mode attaque sélectionné (non implémenté)")
+                                return  # Fin du tour
 
     def move_unit(self, unit, opponents, pause_button, movement_range):
         """Déplace l'unité sélectionnée."""
@@ -328,14 +337,10 @@ class Game:
 
                     if event.key == pygame.K_SPACE:  # Terminer le tour
                         for opponent in opponents:
-                            if abs(unit.x - opponent.x) <= 1 and abs(unit.y - opponent.y) <= 1:
-                                unit.attack(opponent)
-                                if opponent.health <= 0:
-                                    opponents.remove(opponent)
-                        has_acted = True
+                            has_acted = True
 
-    def flip_display(self, pause_button, active_units=None, selected_index=None, color=None, movement_range=None):
-        """Affiche le plateau de jeu avec le curseur."""
+    def flip_display(self, pause_button, active_units=None, selected_index=None, color=None, movement_range=None, card=None, selected_action="move"):
+        """Affiche l'état actuel de la grille et de l'interface."""
         self.screen.blit(MAP, (0, 0))
         for x in range(0, WIDTH, CELL_SIZE):
             for y in range(0, HEIGHT, CELL_SIZE):
@@ -356,20 +361,27 @@ class Game:
         # Dessiner l'otage
         self.hostage.draw(self.screen)
 
-        # Dessiner le rectangle autour de l'unité sélectionnée
+        # Dessiner le contour jaune autour de l'unité sélectionnée
         if active_units and selected_index is not None:
             selected_unit = active_units[selected_index]
-            rect = pygame.Rect(selected_unit.x * CELL_SIZE, selected_unit.y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
-            pygame.draw.rect(self.screen, color, rect, 2)
+            rect = pygame.Rect(
+                selected_unit.x * CELL_SIZE,
+                selected_unit.y * CELL_SIZE,
+                CELL_SIZE,
+                CELL_SIZE
+            )
+            pygame.draw.rect(self.screen, (255, 255, 0), rect, 3)  # Contour jaune pour l'unité sélectionnée
+
+        # Dessiner la carte si elle est passée en paramètre
+        if card:
+            print(f"flip_display : Transmission de l'action sélectionnée = {selected_action}")
+            card.draw(50, HEIGHT - 250, selected_action)  # Passer selected_action
 
         pause_button.changeColor(pygame.mouse.get_pos())
         pause_button.update(self.screen)
         pygame.display.flip()
 
-    def display_card(self):
-        """Affiche une carte statique."""
-        card_x, card_y = 0, HEIGHT - 500
-        self.screen.blit(CARD_BACKGROUND, (card_x, card_y))
+
 
 
 def play():
