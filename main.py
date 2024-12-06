@@ -202,6 +202,16 @@ class Game:
     def __init__(self, screen):
         self.screen = screen
 
+        # Initialiser une carte logique avec des cases traversables (0) ou bloquées (1).
+        self.logical_map = [[0 for _ in range(GRID_SIZE_X)] for _ in range(GRID_SIZE_Y)]
+        
+        # Ajouter des obstacles fixes (par exemple, murs)
+        for x in range(10, 15):
+            for y in range(5, 10):
+                self.logical_map[y][x] = 1  # Exemple : une zone bloquée
+
+
+
         # Créer les unités personnalisées
         self.player_units = [
             Thermite(0, 0),
@@ -221,6 +231,24 @@ class Game:
         # Créer l'otage au centre de la grille
         self.hostage = Hostage(GRID_SIZE_X // 2, GRID_SIZE_Y // 2, r"assets/Hostage.png")
    
+        self.update_logical_map()
+
+    def update_logical_map(self):
+        """Mets à jour la carte logique en fonction des positions des unités et de l'otage."""
+        # Réinitialiser la carte logique
+        self.logical_map = [[0 for _ in range(GRID_SIZE_X)] for _ in range(GRID_SIZE_Y)]
+        
+        # Ajouter les obstacles fixes
+        for x in range(10, 15):
+            for y in range(5, 10):
+                self.logical_map[y][x] = 1
+
+        # Ajouter les unités
+        for unit in self.player_units + self.enemy_units:
+            self.logical_map[unit.y][unit.x] = 2  # 2 = Unité
+        self.logical_map[self.hostage.y][self.hostage.x] = 3  # 3 = Otage
+
+
     def get_attack_range(self, unit):
         """Retourne une liste des cellules accessibles pour une attaque avec une portée de 10."""
         attack_range = []
