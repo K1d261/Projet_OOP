@@ -1,5 +1,6 @@
 import pygame
-
+# Taille des cellules
+CELL_SIZE = 40
 class Card:
     def __init__(self, unit, screen):
         self.unit = unit
@@ -8,10 +9,25 @@ class Card:
         self.height = 250
         self.background_color = (0, 0, 128)
         self.text_color = (255, 255, 255)
+        self.selected_action = "attack"  # Action par défaut
+        self.attack_range = None  # Plage d'attaque
 
-    def draw(self, x, y, selected_action="move"):
-       
+    def update(self, unit=None, selected_action=None, attack_range=None):
+        """
+        Met à jour les informations de la carte :
+        - unit : nouvelle unité à afficher.
+        - selected_action : action sélectionnée.
+        - attack_range : portée d'attaque.
+        """
+        if unit:
+            self.unit = unit
+        if selected_action:
+            self.selected_action = selected_action
+        if attack_range is not None:
+            self.attack_range = attack_range
 
+    def draw(self, x, y):
+        """Dessine la carte et les informations de l'unité."""
         # Dessiner le fond de la carte
         card_rect = pygame.Rect(x, y, self.width, self.height)
         pygame.draw.rect(self.screen, self.background_color, card_rect)
@@ -32,7 +48,7 @@ class Card:
         health_text = stats_font.render(f"PV: {self.unit.health}/{self.unit.max_health}", True, self.text_color)
 
         # Afficher les textes
-        self.screen.blit(attack_text, (x + 100, y + 50))  # Position sous le rôle
+        self.screen.blit(attack_text, (x + 100, y + 50))
         self.screen.blit(defense_text, (x + 100, y + 70))
         self.screen.blit(health_text, (x + 100, y + 90))
 
@@ -41,23 +57,24 @@ class Card:
         pygame.draw.rect(self.screen, (255, 0, 0), (x + 10, y + 120, self.width - 20, 10))
         pygame.draw.rect(self.screen, (0, 255, 0), (x + 10, y + 120, (self.width - 20) * health_ratio, 10))
 
-        # Boutons d'action avec fond blanc
+        # Couleurs des boutons
+        default_color = (255, 255, 255)  # Blanc pour les boutons non sélectionnés
+        selected_color = (255, 255, 0)   # Jaune pour le bouton sélectionné
+
+        # Déterminer la couleur de chaque bouton en fonction de l'action sélectionnée
+        attack_color = selected_color if self.selected_action == "attack" else default_color
+        move_color = selected_color if self.selected_action == "move" else default_color
+        special_color = selected_color if self.selected_action == "special" else default_color
+
+        # Boutons d'action
         attack_button = pygame.Rect(x + 10, y + 150, 80, 30)
         move_button = pygame.Rect(x + 100, y + 150, 80, 30)
         special_button = pygame.Rect(x + 190, y + 150, 80, 30)
 
-        # Fond des boutons
-        pygame.draw.rect(self.screen, (255, 255, 255), attack_button)
-        pygame.draw.rect(self.screen, (255, 255, 255), move_button)
-        pygame.draw.rect(self.screen, (255, 255, 255), special_button)
-
-        # Contour rouge pour l'action sélectionnée
-        if selected_action == "move":
-            pygame.draw.rect(self.screen, (255, 0, 0), move_button, 3)
-        elif selected_action == "attack":
-            pygame.draw.rect(self.screen, (255, 0, 0), attack_button, 3)
-        elif selected_action == "special":
-            pygame.draw.rect(self.screen, (255, 0, 0), special_button, 3)
+        # Dessiner les boutons avec les couleurs appropriées
+        pygame.draw.rect(self.screen, attack_color, attack_button)
+        pygame.draw.rect(self.screen, move_color, move_button)
+        pygame.draw.rect(self.screen, special_color, special_button)
 
         # Ajouter le texte des boutons
         self.screen.blit(stats_font.render("Attack", True, (0, 0, 0)), (x + 20, y + 155))

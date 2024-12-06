@@ -220,40 +220,21 @@ class Game:
 
         # Créer l'otage au centre de la grille
         self.hostage = Hostage(GRID_SIZE_X // 2, GRID_SIZE_Y // 2, r"assets/Hostage.png")
-    def execute_special(self, unit, opponents):
-        """Exécute l'attaque spéciale de l'unité."""
-        print(f"{unit.role} utilise son attaque spéciale !")
-        special_range = self.get_movement_range(unit)  # Adapter pour définir la portée spéciale si nécessaire
-        selected_x, selected_y = unit.x, unit.y  # Initialiser à la position actuelle
+   
+    def get_attack_range(self, unit):
+        """Retourne une liste des cellules accessibles pour une attaque avec une portée de 10."""
+        attack_range = []
+        max_distance = 10  # Portée d'attaque maximale
 
-        while True:
-            # Afficher les cases de portée spéciale
-            self.flip_display(pause_button=None, active_units=[unit], selected_index=0, color=(255, 165, 0), movement_range=special_range)
+        for dx in range(-max_distance, max_distance + 1):
+            for dy in range(-max_distance, max_distance + 1):
+                if abs(dx) + abs(dy) <= max_distance:  # Rayon Manhattan de 10
+                    new_x = unit.x + dx
+                    new_y = unit.y + dy
+                    if 0 <= new_x < GRID_SIZE_X and 0 <= new_y < GRID_SIZE_Y:
+                        attack_range.append((new_x, new_y))
+        return attack_range
 
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_LEFT:
-                        if (selected_x - 1, selected_y) in special_range:
-                            selected_x -= 1
-                    elif event.key == pygame.K_RIGHT:
-                        if (selected_x + 1, selected_y) in special_range:
-                            selected_x += 1
-                    elif event.key == pygame.K_UP:
-                        if (selected_x, selected_y - 1) in special_range:
-                            selected_y -= 1
-                    elif event.key == pygame.K_DOWN:
-                        if (selected_x, selected_y + 1) in special_range:
-                            selected_y += 1
-                    elif event.key == pygame.K_SPACE:
-                        # Vérifier s'il y a une cible sur la case
-                        for opponent in opponents:
-                            if opponent.x == selected_x and opponent.y == selected_y:
-                                unit.special_ability(opponent)  # Appelle la capacité spéciale
-                                print(f"{unit.role} a utilisé son attaque spéciale sur {opponent.role} !")
-                                return
 
     def get_movement_range(self, unit):
         """
@@ -268,37 +249,105 @@ class Game:
                     if 0 <= new_x < GRID_SIZE_X and 0 <= new_y < GRID_SIZE_Y:  # Reste dans la grille
                         movement_range.append((new_x, new_y))
         return movement_range
+    def handle_attack(self, unit, opponents):
+        """Gère l'attaque d'une unité en ciblant uniquement les ennemis dans la portée."""
+        attack_range = self.get_attack_range(unit)  # Obtenir la portée d'attaque
+        valid_targets = [opponent for opponent in opponents if (opponent.x, opponent.y) in attack_range]
+        if not valid_targets:
+            print("Aucune cible valide dans la portée.")
+            return  # Fin si aucune cible valide
 
-    def handle_turn(self, active_units, opponents, pause_button, color):
-        """Gère un tour avec sélection, choix d'action et déplacement d'une unité."""
-        selected_index = 0
-        has_selected_unit = False
-        selected_action = "move"  # Action par défaut
-        movement_range = None  # Zones accessibles
-        actions = ["attack", "move", "special"]  # Liste des actions disponibles
-        action_index = 1  # Index pour "move"
+        target_index = 0  # Index de la cible dans la liste des cibles valides
 
         while True:
-            selected_unit = active_units[selected_index]
-
-            # Si l'unité est sélectionnée, calculer les zones accessibles
-            if has_selected_unit:
-                movement_range = self.get_movement_range(selected_unit)
-
-            # Afficher la carte et l'état actuel
-            card = Card(selected_unit, self.screen)
+            # Afficher les cases d'attaque
             self.flip_display(
-                pause_button,
-                active_units,
-                selected_index,
-                color,
-                movement_range,
-                card=card,
-                selected_action=actions[action_index]  # Passer l'action sélectionnée
+                active_units=[unit],
+                selected_index=0,
+                color=(255, 0, 0),  # Rouge pour la portée d'attaque
+                attack_range=attack_range,
+                selected_action="attack"
             )
 
-            # Impressions pour suivre l'état actuel
-            print(f"Unité sélectionnée : {selected_unit.role} | Action sélectionnée : {actions[action_index]}")
+            # Dessiner un contour autour de la cible actuelle
+            target = valid_targets[target_index]
+            pygame.draw.rect(
+                self.screen,
+                (0, 255, 0),  # Vert pour indiquer la cible sélectionnée
+                pygame.Rect(target.x * CELL_SIZE, target.y * CELL_SIZE, CELL_SIZE, CELL_SIZE),
+                3
+            )
+            pygame.display.update()
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_LEFT:
+                        # Changer de cible à gauche
+                        target_index = (target_index - 1) % len(valid_targets)
+                    elif event.key == pygame.K_RIGHT:
+                        # Changer de cible à droite
+                        target_index = (target_index + 1) % len(valid_targets)
+                    elif event.key == pygame.K_SPACE:
+                        # Infliger des dégâts à la cible
+                        target.health = max(0, target.health - unit.attack_power)
+                        print(f"{unit.role} attaque {target.role} et inflige {unit.attack_power} dégâts !")
+                        if target.health <= 0:
+                            print(f"{target.role} a été éliminé !")
+                            opponents.remove(target)
+                        return  # Fin de l'attaque
+
+
+
+    # Ajout des modifications pour gérer correctement selected_action dans tous les appels
+
+    def handle_turn(self, active_units, opponents, pause_button, color):
+        """Gère un tour avec sélection, choix d'action, déplacement et attaque."""
+        selected_index = 0
+        has_selected_unit = False
+        selected_action = "move"  # Action par défaut au début du tour
+        actions = ["attack", "move", "special"]  # Actions disponibles
+        action_index = 1  # Index pour "move"
+        movement_range = None
+        attack_range = None
+        action_completed = False  # Indicateur d'achèvement de l'action
+
+        # Initialiser la carte pour la première unité sélectionnée
+        selected_unit = active_units[selected_index]
+        card = Card(selected_unit, self.screen)
+
+        while not action_completed:  # Continue tant que le tour n'est pas terminé
+            # Mettre à jour les zones accessibles si une action change
+            if has_selected_unit:
+                if actions[action_index] == "move" and selected_action != "move":
+                    movement_range = self.get_movement_range(selected_unit)
+                    attack_range = None
+                    selected_action = "move"
+                elif actions[action_index] == "attack" and selected_action != "attack":
+                    attack_range = self.get_attack_range(selected_unit)
+                    movement_range = None
+                    selected_action = "attack"
+                    card.update(selected_action="attack")
+                elif actions[action_index] == "special" and selected_action != "special":
+                    movement_range = attack_range = None
+                    selected_action = "special"
+
+            # Mettre à jour la carte avec les nouvelles informations
+            card.update(unit=selected_unit, selected_action=selected_action)
+
+            # Afficher la grille, la carte et les zones accessibles
+            self.flip_display(
+                pause_button=pause_button,
+                active_units=active_units,
+                selected_index=selected_index,
+                color=color,
+                movement_range=movement_range,
+                attack_range=attack_range,
+                card=card,
+                selected_action=selected_action
+            )
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -312,33 +361,35 @@ class Game:
                         # Navigation entre les unités avant sélection
                         if event.key == pygame.K_LEFT:
                             selected_index = (selected_index - 1) % len(active_units)
-                            print(f"Changement d'unité : index = {selected_index}")
+                            selected_unit = active_units[selected_index]
+                            card.update(unit=selected_unit)  # Mettre à jour la carte pour l'unité sélectionnée
                         elif event.key == pygame.K_RIGHT:
                             selected_index = (selected_index + 1) % len(active_units)
-                            print(f"Changement d'unité : index = {selected_index}")
+                            selected_unit = active_units[selected_index]
+                            card.update(unit=selected_unit)  # Mettre à jour la carte pour l'unité sélectionnée
                         elif event.key == pygame.K_SPACE:
                             has_selected_unit = True
-                            print(f"Unité verrouillée pour sélection : {selected_index}")
                     else:
                         # Navigation entre les actions après sélection
                         if event.key == pygame.K_LEFT:
                             action_index = (action_index - 1) % len(actions)
-                            print(f"Action modifiée : {actions[action_index]}")
                         elif event.key == pygame.K_RIGHT:
                             action_index = (action_index + 1) % len(actions)
-                            print(f"Action modifiée : {actions[action_index]}")
                         elif event.key == pygame.K_SPACE:
-                            print(f"Action confirmée : {actions[action_index]}")
+                            # Exécuter l'action sélectionnée
                             if actions[action_index] == "move":
-                                # Déplacer l'unité
                                 self.move_unit(selected_unit, opponents, pause_button, movement_range)
-                                return  # Fin du tour
+                                action_completed = True  # Fin du tour
                             elif actions[action_index] == "attack":
-                                print("Mode attaque sélectionné (non implémenté)")
-                                return  # Fin du tour
+                                self.handle_attack(selected_unit, opponents)
+                                action_completed = True  # Fin du tour
                             elif actions[action_index] == "special":
-                                print("Mode spécial sélectionné (non implémenté)")
-                                return  # Fin du tour
+                                print("Mode spécial non implémenté.")
+                                action_completed = True  # Fin du tour
+
+
+
+
 
 
     def move_unit(self, unit, opponents, pause_button, movement_range):
@@ -378,28 +429,38 @@ class Game:
                     if event.key == pygame.K_SPACE:  # Terminer le tour
                         for opponent in opponents:
                             has_acted = True
-
-    def flip_display(self, pause_button, active_units=None, selected_index=None, color=None, movement_range=None, card=None, selected_action="move"):
+    def flip_display(self, pause_button=None, active_units=None, selected_index=None, color=None, movement_range=None, attack_range=None, card=None, selected_action="move"):
         """Affiche l'état actuel de la grille et de l'interface."""
+        # Dessiner la carte de fond
         self.screen.blit(MAP, (0, 0))
+
+        # Dessiner la grille
         for x in range(0, WIDTH, CELL_SIZE):
             for y in range(0, HEIGHT, CELL_SIZE):
                 rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
                 pygame.draw.rect(self.screen, WHITE, rect, 1)
 
-        # Dessiner les zones accessibles
-        if movement_range:
+        # Dessiner les zones accessibles pour le mouvement (jaune transparent)
+        if movement_range and selected_action == "move":
             for cell in movement_range:
-                rect = pygame.Rect(cell[0] * CELL_SIZE, cell[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE)
-                move_color = (255, 0, 0) if active_units[0].team == 'player' else (0, 0, 255)
-                pygame.draw.rect(self.screen, move_color, rect, 2)
+                jaune_clair = pygame.Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)
+                jaune_clair.fill((255, 255, 0, 128))  # Jaune transparent
+                self.screen.blit(jaune_clair, (cell[0] * CELL_SIZE, cell[1] * CELL_SIZE))
+
+        # Dessiner les zones accessibles pour l'attaque (rouge transparent)
+        if attack_range and selected_action == "attack":
+            for cell in attack_range:
+                rouge_clair = pygame.Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)
+                rouge_clair.fill((255, 0, 0, 128))  # Rouge transparent
+                self.screen.blit(rouge_clair, (cell[0] * CELL_SIZE, cell[1] * CELL_SIZE))
 
         # Dessiner les unités
         for unit in self.player_units + self.enemy_units:
             unit.draw(self.screen)
 
-        # Dessiner l'otage
+         # Dessiner l'otage
         self.hostage.draw(self.screen)
+
 
         # Dessiner le contour jaune autour de l'unité sélectionnée
         if active_units and selected_index is not None:
@@ -412,20 +473,16 @@ class Game:
             )
             pygame.draw.rect(self.screen, (255, 255, 0), rect, 3)  # Contour jaune pour l'unité sélectionnée
 
-        # Dessiner les zones de portée spéciale
-        if movement_range and color == (255, 165, 0):  # Orange pour la portée spéciale
-            for cell in movement_range:
-                rect = pygame.Rect(cell[0] * CELL_SIZE, cell[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE)
-                pygame.draw.rect(self.screen, (255, 165, 0), rect, 2)
-
-
-        # Dessiner la carte si elle est passée en paramètre
+        # Dessiner la carte
         if card:
-            print(f"flip_display : Transmission de l'action sélectionnée = {selected_action}")
-            card.draw(50, HEIGHT - 250, selected_action)  # Passer selected_action
+            card.draw(50, HEIGHT - 250)  # Garder la carte visible
 
-        pause_button.changeColor(pygame.mouse.get_pos())
-        pause_button.update(self.screen)
+        # Gérer le bouton de pause
+        if pause_button is not None:
+            pause_button.changeColor(pygame.mouse.get_pos())
+            pause_button.update(self.screen)
+
+        # Rafraîchir l'affichage
         pygame.display.flip()
 
 
