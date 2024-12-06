@@ -2,7 +2,7 @@ from unit import Unit
 
 class Glaz(Unit):
     def __init__(self, x, y):
-        super().__init__(x, y, health=100, attack_power=70, defense=30, speed=3, team='player', role='sniper', image_path='assets/images/glaz.png')
+        super().__init__(x, y, health=100, attack_power=70, defense=30, speed=3, team='player', role='Glaz (Sniper)', image_path='assets/images/glaz.png')
 
     def special_ability(self, target):
         """Attaque les ennemis même s'ils sont cachés dans la fumée."""

@@ -6,7 +6,7 @@ class Caveira(Unit):
     """
     def __init__(self, x, y):
         image_path = 'assets/images/caveira.png'  # Chemin vers l'image spécifique
-        super().__init__(x, y, health=100, attack_power=60, defense=50, speed=3, team='enemy', role='specialist', image_path=image_path)
+        super().__init__(x, y, health=100, attack_power=60, defense=50, speed=3, team='enemy', role='Caveira (Specialist)', image_path=image_path)
 
     def special_ability(self, target, enemy_team):
         """
