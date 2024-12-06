@@ -4,7 +4,7 @@ class Card:
     def __init__(self, unit, screen):
         self.unit = unit
         self.screen = screen
-        self.width = 400  # Augmentez la largeur de la carte
+        self.width = 600  # Augmentez la largeur de la carte
         self.height = 300  # Augmentez la hauteur de la carte
         self.background_color = (0, 0, 128)
         self.text_color = (255, 255, 255)
@@ -84,19 +84,36 @@ class Card:
         attack_color = selected_color if self.selected_action == "attack" else default_color
         move_color = selected_color if self.selected_action == "move" else default_color
         special_color = selected_color if self.selected_action == "special" else default_color
+        back_color = selected_color if self.selected_action == "back" else default_color
 
-        # Boutons d'action
-        attack_button = pygame.Rect(x + 20, y + 200, 100, 40)
-        move_button = pygame.Rect(x + 140, y + 200, 100, 40)
-        special_button = pygame.Rect(x + 260, y + 200, 100, 40)
+        # Dimensions ajustées pour 4 boutons sur une ligne
+        button_width = (self.width - 60) // 5  # Espacement total réduit de 60 pour les marges
+        button_height = 40
+        button_spacing = 20
+
+        # Calcul des positions des boutons
+        button_positions = [
+            (x + 20, y + 220),  # Bouton Attack
+            (x + 20 + button_width + button_spacing, y + 220),  # Bouton Move
+            (x + 20 + 2 * (button_width + button_spacing), y + 220),  # Bouton Special
+            (x + 20 + 3 * (button_width + button_spacing), y + 220)   # Bouton Back
+        ]
+
+        # Créer les rectangles pour les boutons
+        attack_button = pygame.Rect(*button_positions[0], button_width, button_height)
+        move_button = pygame.Rect(*button_positions[1], button_width, button_height)
+        special_button = pygame.Rect(*button_positions[2], button_width, button_height)
+        back_button = pygame.Rect(*button_positions[3], button_width, button_height)
 
         # Dessiner les boutons avec les couleurs appropriées
         pygame.draw.rect(self.screen, attack_color, attack_button)
         pygame.draw.rect(self.screen, move_color, move_button)
         pygame.draw.rect(self.screen, special_color, special_button)
+        pygame.draw.rect(self.screen, back_color, back_button)
 
         # Ajouter le texte des boutons
         button_font = pygame.font.Font(None, 26)  # Police pour les boutons
-        self.screen.blit(button_font.render("Attack", True, (0, 0, 0)), (x + 35, y + 210))
-        self.screen.blit(button_font.render("Move", True, (0, 0, 0)), (x + 155, y + 210))
-        self.screen.blit(button_font.render("Special", True, (0, 0, 0)), (x + 275, y + 210))
+        self.screen.blit(button_font.render("Attack", True, (0, 0, 0)), (button_positions[0][0] + 10, button_positions[0][1] + 10))
+        self.screen.blit(button_font.render("Move", True, (0, 0, 0)), (button_positions[1][0] + 20, button_positions[1][1] + 10))
+        self.screen.blit(button_font.render("Special", True, (0, 0, 0)), (button_positions[2][0] + 10, button_positions[2][1] + 10))
+        self.screen.blit(button_font.render("Back", True, (0, 0, 0)), (button_positions[3][0] + 20, button_positions[3][1] + 10))

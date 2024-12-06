@@ -15,10 +15,7 @@ from kapkan import Kapkan
 from caveira import Caveira
 pygame.init()
 
-#musique
-pygame.mixer.init()
-pygame.mixer.music.load("assets/chess.mp3")
-pygame.mixer.music.play(loops=-1,start=0.0)
+
 
 
 # Obtenir la taille de l'écran
@@ -104,6 +101,10 @@ def pause_menu():
 
 
 def main_menu():
+    #musique
+    pygame.mixer.init()
+    pygame.mixer.music.load("assets/chess.mp3")
+    pygame.mixer.music.play(loops=-1,start=0.0)
     """Affiche le menu principal."""
     bg_image = pygame.image.load("assets/Background.png")
     bg_image = pygame.transform.scale(bg_image, (WIDTH, HEIGHT))
@@ -487,6 +488,11 @@ class Game:
 
 
     # Ajout des modifications pour gérer correctement selected_action dans tous les appels
+    def handle_pause(self, pause_button):
+        """Vérifie si le bouton pause est cliqué et ouvre le menu pause."""
+        mouse_pos = pygame.mouse.get_pos()
+        if pause_button.checkForInput(mouse_pos):
+            pause_menu()
 
     def handle_turn(self, active_units, opponents, pause_button, color):
         """Gère un tour avec sélection, choix d'action, déplacement et attaque."""
@@ -502,19 +508,17 @@ class Game:
 
         selected_index = 0
         has_selected_unit = False
-        selected_action = "move"  # Action par défaut au début du tour
-        actions = ["attack", "move", "special"]  # Actions disponibles
-        action_index = 1  # Index pour "move"
+        selected_action = "attack"  # Action par défaut au début du tour
+        actions = ["attack", "move", "special", "back"]
+        action_index = 0
         movement_range = None
         attack_range = None
-        action_completed = False  # Indicateur d'achèvement de l'action
+        action_completed = False
 
-        # Initialiser la carte pour la première unité sélectionnée
         selected_unit = active_units[selected_index]
         card = Card(selected_unit, self.screen)
 
-        while not action_completed:  # Continue tant que le tour n'est pas terminé
-            # Mettre à jour les zones accessibles si une action change
+        while not action_completed:
             if has_selected_unit:
                 if actions[action_index] == "move" and selected_action != "move":
                     movement_range = self.get_movement_range(selected_unit)
@@ -524,15 +528,15 @@ class Game:
                     attack_range = self.get_attack_range(selected_unit)
                     movement_range = None
                     selected_action = "attack"
-                    card.update(selected_action="attack")
                 elif actions[action_index] == "special" and selected_action != "special":
                     movement_range = attack_range = None
                     selected_action = "special"
+                elif actions[action_index] == "back" and selected_action != "back":
+                    movement_range = attack_range = None
+                    selected_action = "back"
 
-            # Mettre à jour la carte avec les nouvelles informations
-            card.update(unit=selected_unit, selected_action=selected_action)
+                card.update(unit=selected_unit, selected_action=selected_action)
 
-            # Afficher la grille, la carte et les zones accessibles
             self.flip_display(
                 pause_button=pause_button,
                 active_units=active_units,
@@ -549,41 +553,39 @@ class Game:
                     pygame.quit()
                     sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    if pause_button.checkForInput(pygame.mouse.get_pos()):
-                        pause_menu()
+                    self.handle_pause(pause_button)  # Vérifie si pause est cliqué
                 if event.type == pygame.KEYDOWN:
                     if not has_selected_unit:
-                        # Navigation entre les unités avant sélection
                         if event.key == pygame.K_LEFT:
-                            selected_index = (selected_index - 1) % len(active_units)
+                            selected_index = (selected_index) % len(active_units)
                             selected_unit = active_units[selected_index]
-                            card.update(unit=selected_unit)  # Mettre à jour la carte pour l'unité sélectionnée
+                            card.update(unit=selected_unit)
                         elif event.key == pygame.K_RIGHT:
                             selected_index = (selected_index + 1) % len(active_units)
                             selected_unit = active_units[selected_index]
-                            card.update(unit=selected_unit)  # Mettre à jour la carte pour l'unité sélectionnée
+                            card.update(unit=selected_unit)
                         elif event.key == pygame.K_SPACE:
                             has_selected_unit = True
-                            # Initialiser le mouvement une fois l'unité sélectionnée
                             movement_range = self.get_movement_range(selected_unit)
                     else:
-                        # Navigation entre les actions après sélection
                         if event.key == pygame.K_LEFT:
                             action_index = (action_index - 1) % len(actions)
                         elif event.key == pygame.K_RIGHT:
                             action_index = (action_index + 1) % len(actions)
                         elif event.key == pygame.K_SPACE:
-                            # Exécuter l'action sélectionnée
                             if actions[action_index] == "move":
                                 self.move_unit(selected_unit, opponents, pause_button, movement_range)
-                                action_completed = True  # Fin du tour
+                                action_completed = True
                             elif actions[action_index] == "attack":
                                 self.handle_attack(selected_unit, opponents)
-                                action_completed = True  # Fin du tour
+                                action_completed = True
                             elif actions[action_index] == "special":
                                 print("Mode spécial non implémenté.")
-                                action_completed = True  # Fin du tour
-
+                                action_completed = True
+                            elif actions[action_index] == "back":
+                                has_selected_unit = False
+                                action_index = 0
+                                selected_action = "attack"
 
 
 
@@ -600,8 +602,7 @@ class Game:
                     pygame.quit()
                     sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    if pause_button.checkForInput(pygame.mouse.get_pos()):
-                        pause_menu()
+                    self.handle_pause(pause_button)  # Vérifie si pause est cliqué
                 if event.type == pygame.KEYDOWN:
                     dx, dy = 0, 0
                     if event.key == pygame.K_LEFT:
@@ -613,18 +614,16 @@ class Game:
                     elif event.key == pygame.K_DOWN:
                         dy = 1
 
-                    # Calcul des nouvelles positions
                     new_x = unit.x + dx
                     new_y = unit.y + dy
 
-                    # Vérifier si le déplacement est valide (dans les limites et non bloqué par un mur)
                     if (new_x, new_y) in movement_range and self.logical_map[new_y][new_x] != 1:
                         unit.move(dx, dy, GRID_SIZE_X, GRID_SIZE_Y)
 
-                    if event.key == pygame.K_SPACE:  # Terminer le tour
+                    if event.key == pygame.K_SPACE:
                         has_acted = True
 
-    def flip_display(self, pause_button=None, active_units=None, selected_index=None, color=None, movement_range=None, attack_range=None, card=None, selected_action="move"):
+    def flip_display(self, pause_button=None, active_units=None, selected_index=None, color=None, movement_range=None, attack_range=None, card=None, selected_action="attack"):
         """Affiche l'état actuel de la grille et de l'interface."""
         # Dessiner la carte de fond
         self.screen.blit(MAP, (0, 0))
@@ -691,18 +690,24 @@ class Game:
         pygame.display.flip()
 
     def display_winner(self, winner):
+        #musique
+        pygame.mixer.init()
+        pygame.mixer.music.load("assets/Victory.mp3")
+        pygame.mixer.music.play(loops=-1,start=0.0)
         """Affiche le message du gagnant et termine le jeu."""
         font = get_font(60)
         message = font.render(f"Team {winner} wins!", True, WHITE)
         message_rect = message.get_rect(center=(WIDTH // 2, HEIGHT // 2))
 
         # Fond noir
-        self.screen.fill(BLACK)
+        Victory = pygame.image.load("assets/Victory.jpg")
+        Victory = pygame.transform.scale(MAP, (WIDTH, HEIGHT))
+        self.screen.blit(Victory, (0, 0))
         self.screen.blit(message, message_rect)
         pygame.display.flip()
 
         # Pause pour que le joueur puisse lire le message
-        pygame.time.wait(8000)
+        pygame.time.wait(6000)
 
         # Retour au menu principal
         main_menu()
