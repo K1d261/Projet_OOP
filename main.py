@@ -274,9 +274,11 @@ class Game:
                 if abs(dx) + abs(dy) <= unit.speed:  # Respecte la distance maximale
                     new_x = unit.x + dx
                     new_y = unit.y + dy
-                    if 0 <= new_x < GRID_SIZE_X and 0 <= new_y < GRID_SIZE_Y:  # Reste dans la grille
+                    if (0 <= new_x < GRID_SIZE_X and 0 <= new_y < GRID_SIZE_Y and self.logical_map[new_y][new_x] == 0):  # Reste dans la grille
                         movement_range.append((new_x, new_y))
         return movement_range
+    
+
     def handle_attack(self, unit, opponents):
         """Gère l'attaque d'une unité en ciblant uniquement les ennemis dans la portée."""
         attack_range = self.get_attack_range(unit)  # Obtenir la portée d'attaque
