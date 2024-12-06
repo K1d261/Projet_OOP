@@ -259,9 +259,32 @@ class Game:
                 if abs(dx) + abs(dy) <= max_distance:  # Rayon Manhattan de 10
                     new_x = unit.x + dx
                     new_y = unit.y + dy
-                    if 0 <= new_x < GRID_SIZE_X and 0 <= new_y < GRID_SIZE_Y:
+                    if 0 <= new_x < GRID_SIZE_X and 0 <= new_y < GRID_SIZE_Y and self.is_line_of_sight_clear(unit.x, unit.y, new_x, new_y):
+                    # Vérifie si la ligne de vue est dégagée
                         attack_range.append((new_x, new_y))
         return attack_range
+    
+
+    def is_line_of_sight_clear(self, x1, y1, x2, y2):
+        """
+        Vérifie si la ligne de vue entre deux points est dégagée.
+        Utilise un algorithme de tracé de ligne pour détecter les obstacles.
+        """
+        dx = x2 - x1
+        dy = y2 - y1
+        # Si les points sont identiques, la ligne de vue est dégagée
+        if dx == 0 and dy == 0:
+            return True
+        steps = max(abs(dx), abs(dy))
+        x_step = dx / steps
+        y_step = dy / steps
+
+        for step in range(1, steps):
+            x = round(x1 + step * x_step)
+            y = round(y1 + step * y_step)
+            if self.logical_map[y][x] == 1:  # Si une cellule est un obstacle
+                return False
+        return True
 
 
     def get_movement_range(self, unit):
@@ -269,6 +292,9 @@ class Game:
         Retourne une liste des cellules accessibles pour une unité en fonction de sa position et de sa vitesse.
         """
         movement_range = []
+        if not unit:  # Vérifiez que l'unité est valide
+            return movement_range  # Retourne une liste vide si l'unité est absente
+    
         for dx in range(-unit.speed, unit.speed + 1):
             for dy in range(-unit.speed, unit.speed + 1):
                 if abs(dx) + abs(dy) <= unit.speed:  # Respecte la distance maximale
@@ -399,6 +425,8 @@ class Game:
                             card.update(unit=selected_unit)  # Mettre à jour la carte pour l'unité sélectionnée
                         elif event.key == pygame.K_SPACE:
                             has_selected_unit = True
+                             # Initialiser le mouvement une fois l'unité sélectionnée
+                            movement_range = self.get_movement_range(selected_unit)
                     else:
                         # Navigation entre les actions après sélection
                         if event.key == pygame.K_LEFT:
@@ -463,12 +491,24 @@ class Game:
         """Affiche l'état actuel de la grille et de l'interface."""
         # Dessiner la carte de fond
         self.screen.blit(MAP, (0, 0))
+        
 
         # Dessiner la grille
         for x in range(0, WIDTH, CELL_SIZE):
             for y in range(0, HEIGHT, CELL_SIZE):
                 rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
                 pygame.draw.rect(self.screen, WHITE, rect, 1)
+
+        # Dessiner les obstacles
+        for y, row in enumerate(self.logical_map):
+            for x, cell in enumerate(row):
+                if cell == 1:  # Cellule infranchissable
+                    pygame.draw.rect(
+                        self.screen,
+                        (100, 100, 100),  # Couleur grise pour les obstacles
+                        pygame.Rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+                    )
+
 
         # Dessiner les zones accessibles pour le mouvement (jaune transparent)
         if movement_range and selected_action == "move":
