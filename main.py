@@ -255,11 +255,11 @@ class Game:
 
         # Créer les unités personnalisées
         self.player_units = [
-            Thermite(0, 0),
-            Glaz(0, 1),
-            Fuze(0, 2),
-            Montagne(0, 3),
-            Doc(0, 4)
+            Thermite(0, 13),
+            Glaz(1, 13),
+            Fuze(0, 14),
+            Montagne(1, 14),
+            Doc(2, 14)
         ]
         self.enemy_units = [
             Jackal(47, 0),
@@ -269,9 +269,77 @@ class Game:
             Caveira(47,4)
         ]
 
-        # Créer l'otage au centre de la grille
+        # Placer l'otage dans son lit de la grille
         self.hostage = Hostage(GRID_SIZE_X // 2 + 6, GRID_SIZE_Y // 2 +2, r"assets/Hostage.png")
    
+        self.update_logical_map()
+
+         # Appeler la phase de placement initial
+        self.initial_placement_phase()
+
+    def initial_placement_phase(self):
+        """Phase de placement initial pour le joueur 2."""
+        font = get_font(40)
+        message = font.render("Player 2: place your defendants!", True, WHITE)
+        message_rect = message.get_rect(center=(WIDTH // 2, 50))
+
+        # Création du bouton pause
+        pause_button = Button(pygame.image.load("assets/Pause Rect.png"), (WIDTH - 150, 50),
+                            "PAUSE", get_font(20), "#d7fcd4", "Yellow")
+
+        units_to_place = self.enemy_units.copy()
+        placed_units = []
+
+        while units_to_place:
+            # Afficher le message et la grille
+            self.screen.blit(MAP, (0, 0))
+            self.screen.blit(message, message_rect)
+
+            for x in range(0, WIDTH, CELL_SIZE):
+                for y in range(0, HEIGHT, CELL_SIZE):
+                    rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
+                    pygame.draw.rect(self.screen, BLACK, rect, 1)
+
+            # Dessiner les unités déjà placées
+            for unit in placed_units:
+                unit.draw(self.screen)
+
+            # Dessiner le bouton pause
+            pause_button.changeColor(pygame.mouse.get_pos())
+            pause_button.update(self.screen)
+
+            pygame.display.flip()
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_x, mouse_y = pygame.mouse.get_pos()
+
+                    # Gestion du bouton pause
+                    if pause_button.checkForInput((mouse_x, mouse_y)):
+                        pause_menu()
+                        continue
+
+                    # Placement des unités
+                    grid_x = mouse_x // CELL_SIZE
+                    grid_y = mouse_y // CELL_SIZE
+
+                    # Vérifier si la cellule est libre pour le placement
+                    if (
+                        0 <= grid_x < len(self.logical_map[0])
+                        and 0 <= grid_y < len(self.logical_map)
+                        and self.logical_map[grid_y][grid_x] == 0  # Cellule vide
+                    ):
+                        # Placer l'unité et la retirer de la liste
+                        unit = units_to_place.pop(0)
+                        unit.x, unit.y = grid_x, grid_y
+                        placed_units.append(unit)
+                        self.logical_map[grid_y][grid_x] = 2  # Marquer la cellule comme occupée
+
+        # Mise à jour de la carte logique après placement
         self.update_logical_map()
 
     def update_logical_map(self):
@@ -286,14 +354,10 @@ class Game:
         for unit in self.player_units + self.enemy_units:
             if 0 <= unit.y < len(self.logical_map) and 0 <= unit.x < len(self.logical_map[unit.y]):
                 self.logical_map[unit.y][unit.x] = 2  # 2 = Unité
-            else:
-                print(f"DEBUG: Unité hors limites - x: {unit.x}, y: {unit.y}")
 
         # Ajouter l'otage
         if 0 <= self.hostage.y < len(self.logical_map) and 0 <= self.hostage.x < len(self.logical_map[self.hostage.y]):
             self.logical_map[self.hostage.y][self.hostage.x] = 3  # 3 = Otage
-        else:
-            print(f"DEBUG: Otage hors limites - x: {self.hostage.x}, y: {self.hostage.y}")
 
     def get_attack_range(self, unit):
         """
@@ -426,6 +490,16 @@ class Game:
 
     def handle_turn(self, active_units, opponents, pause_button, color):
         """Gère un tour avec sélection, choix d'action, déplacement et attaque."""
+        if not active_units:  # Vérifie si l'équipe active n'a plus d'unités
+            winner = "Defenders" if active_units is self.enemy_units else "Attackers"
+            self.display_winner(winner)
+            return
+
+        if not opponents:  # Vérifie si l'équipe opposée n'a plus d'unités
+            winner = "Defenders" if opponents is self.enemy_units else "Attackers"
+            self.display_winner(winner)
+            return
+
         selected_index = 0
         has_selected_unit = False
         selected_action = "move"  # Action par défaut au début du tour
@@ -490,7 +564,7 @@ class Game:
                             card.update(unit=selected_unit)  # Mettre à jour la carte pour l'unité sélectionnée
                         elif event.key == pygame.K_SPACE:
                             has_selected_unit = True
-                             # Initialiser le mouvement une fois l'unité sélectionnée
+                            # Initialiser le mouvement une fois l'unité sélectionnée
                             movement_range = self.get_movement_range(selected_unit)
                     else:
                         # Navigation entre les actions après sélection
@@ -509,6 +583,7 @@ class Game:
                             elif actions[action_index] == "special":
                                 print("Mode spécial non implémenté.")
                                 action_completed = True  # Fin du tour
+
 
 
 
@@ -615,6 +690,22 @@ class Game:
         # Rafraîchir l'affichage
         pygame.display.flip()
 
+    def display_winner(self, winner):
+        """Affiche le message du gagnant et termine le jeu."""
+        font = get_font(60)
+        message = font.render(f"Team {winner} wins!", True, WHITE)
+        message_rect = message.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+
+        # Fond noir
+        self.screen.fill(BLACK)
+        self.screen.blit(message, message_rect)
+        pygame.display.flip()
+
+        # Pause pour que le joueur puisse lire le message
+        pygame.time.wait(8000)
+
+        # Retour au menu principal
+        main_menu()
 
 
 
@@ -623,7 +714,7 @@ def play():
     """Lance le jeu."""
     pygame.mixer.init()
     pygame.mixer.music.load("assets/Doom.mp3")
-    pygame.mixer.music.play(loops=-1,start=0.0)
+    pygame.mixer.music.play(loops=-1, start=0.0)
     screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
     game = Game(screen)
 
