@@ -39,7 +39,7 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
 # Charger les actifs
-MAP = pygame.image.load("assets/pixelmap.png")
+MAP = pygame.image.load("assets/mapv2.png")
 MAP = pygame.transform.scale(MAP, (WIDTH, HEIGHT))
 CARD_BACKGROUND = pygame.image.load("assets/Card.png")
 CARD_BACKGROUND = pygame.transform.scale(CARD_BACKGROUND, (350, 650))
