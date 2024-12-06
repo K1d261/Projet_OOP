@@ -557,7 +557,7 @@ class Game:
                 if event.type == pygame.KEYDOWN:
                     if not has_selected_unit:
                         if event.key == pygame.K_LEFT:
-                            selected_index = (selected_index) % len(active_units)
+                            selected_index = (selected_index-1) % len(active_units)
                             selected_unit = active_units[selected_index]
                             card.update(unit=selected_unit)
                         elif event.key == pygame.K_RIGHT:
