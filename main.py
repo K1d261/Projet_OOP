@@ -17,8 +17,8 @@ pygame.init()
 
 #musique
 pygame.mixer.init()
-pygame.mixer.music.load("assets/New Jeans (Slowed) - Jersey Club Remix  TikTok Version (Xyuk Official Video).mp3")
-pygame.mixer.music.play(loops=-1,start=0.0, fade_ms=5000)
+pygame.mixer.music.load("assets/chess.mp3")
+pygame.mixer.music.play(loops=-1,start=0.0)
 
 
 # Obtenir la taille de l'écran
@@ -52,6 +52,10 @@ def get_font(size):
 
 def pause_menu():
     """Affiche le menu pause avec une image de fond."""
+    pygame.mixer.init()
+    pygame.mixer.music.load("assets/Pause lol.mp3")
+    pygame.mixer.music.play(loops=-1,start=0.0)
+
     # Charger l'image de fond
     pause_background = pygame.image.load("assets/Pause_menu.jpg")
     pause_background = pygame.transform.scale(pause_background, (WIDTH, HEIGHT))  # Adapter à la taille de l'écran
@@ -81,6 +85,9 @@ def pause_menu():
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if resume_button.checkForInput(mouse_pos):
+                    pygame.mixer.init()
+                    pygame.mixer.music.load("assets/Doom.mp3")
+                    pygame.mixer.music.play(loops=-1,start=0.0)
                     return  # Quitter le menu pause et reprendre
                 if menu_button.checkForInput(mouse_pos):
                     main_menu()
@@ -615,6 +622,9 @@ class Game:
 
 def play():
     """Lance le jeu."""
+    pygame.mixer.init()
+    pygame.mixer.music.load("assets/Doom.mp3")
+    pygame.mixer.music.play(loops=-1,start=0.0)
     screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
     game = Game(screen)
 
