@@ -17,7 +17,7 @@ pygame.init()
 
 #musique
 pygame.mixer.init()
-pygame.mixer.music.load("assets/Kill Again x Evil Empire.mp3")
+pygame.mixer.music.load("assets/New Jeans (Slowed) - Jersey Club Remix  TikTok Version (Xyuk Official Video).mp3")
 pygame.mixer.music.play(loops=-1,start=0.0, fade_ms=5000)
 
 
@@ -51,10 +51,10 @@ def get_font(size):
 
 
 def pause_menu():
-    """Affiche le menu pause avec un fond gris."""
-    overlay = pygame.Surface((WIDTH, HEIGHT))
-    overlay.set_alpha(150)
-    overlay.fill((50, 50, 50))
+    """Affiche le menu pause avec une image de fond."""
+    # Charger l'image de fond
+    pause_background = pygame.image.load("assets/Pause_menu.jpg")
+    pause_background = pygame.transform.scale(pause_background, (WIDTH, HEIGHT))  # Adapter à la taille de l'écran
 
     # Boutons dans le menu pause
     resume_button = Button(None, (WIDTH // 2, HEIGHT // 2 - 50), "RESUME", get_font(40), "White", "Yellow")
@@ -62,7 +62,10 @@ def pause_menu():
     quit_button = Button(None, (WIDTH // 2, HEIGHT // 2 + 150), "QUIT", get_font(40), "White", "Yellow")
 
     while True:
-        SCREEN.blit(overlay, (0, 0))
+        # Afficher l'image de fond
+        SCREEN.blit(pause_background, (0, 0))
+
+        # Texte du menu pause
         pause_text = get_font(45).render("Pause", True, "White")
         SCREEN.blit(pause_text, (WIDTH // 2 - pause_text.get_width() // 2, HEIGHT // 2 - 200))
 
@@ -265,11 +268,10 @@ class Game:
     def update_logical_map(self):
         """Mets à jour la carte logique en fonction des positions des unités et de l'otage."""
         # Réinitialiser la carte logique
-        for y in range(len(self.logical_map)):  # Assurez-vous de parcourir les dimensions réelles de self.logical_map
-            for x in range(len(self.logical_map[y])):  # Même chose pour la largeur de chaque ligne
-                # Ne modifiez que les cellules contenant des unités (2) ou l'otage (3).
+        for y in range(len(self.logical_map)):  
+            for x in range(len(self.logical_map[y])):  
                 if self.logical_map[y][x] in [2, 3]:
-                    self.logical_map[y][x] = 0  # Réinitialisez ces cellules
+                    self.logical_map[y][x] = 0  
 
         # Ajouter les unités
         for unit in self.player_units + self.enemy_units:
@@ -289,7 +291,7 @@ class Game:
         Retourne une liste des cellules accessibles pour une attaque avec une portée spécifique.
         """
         attack_range = []
-        max_distance = 10  # Exemple de portée d'attaque
+        max_distance = 10  # Portée d'attaque
 
         for dx in range(-max_distance, max_distance + 1):
             for dy in range(-max_distance, max_distance + 1):
