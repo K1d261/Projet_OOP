@@ -203,26 +203,41 @@ class Game:
         self.screen = screen
 
         # Initialiser une carte logique avec des cases traversables (0) ou bloquées (1).
+        
         self.logical_map = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 0
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 1
-    [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],  # Ligne 2
-    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],  # Ligne 3
-    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 4
-    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 5
-    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],  # Ligne 6
-    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],  # Ligne 7
-    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],  # Ligne 8
-    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],  # Ligne 9
-    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],  # Ligne 10
-    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],  # Ligne 11
-    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],  # Ligne 12
-    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],  # Ligne 13
-    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],  # Ligne 14
-    [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],  # Ligne 15
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 16
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]   # Ligne 17
-]
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 0
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 1
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 2
+        [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0],  # Ligne 3
+        [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0],  # Ligne 4
+        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 5
+        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 6
+        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 7
+        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 8
+        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 9
+        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 10
+        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 11
+        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 12
+        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 13
+        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 14
+        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 15
+        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 16
+        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 17
+        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 18
+        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 19
+        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 20
+        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 21
+        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 22
+        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 23
+        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 24
+        [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0],  # Ligne 25
+        [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0],  # Ligne 26
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 27
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 28
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]  # Ligne 29
+        ]
+
+
 
 
 
@@ -235,11 +250,11 @@ class Game:
             Doc(0, 4)
         ]
         self.enemy_units = [
-            Jackal(7, 0),
-            Smoke(7, 1),
-            Jaeger(7, 2),
-            Kapkan(7, 3),
-            Caveira(7,4)
+            Jackal(6, 5),
+            Smoke(47, 1),
+            Jaeger(47, 2),
+            Kapkan(47, 3),
+            Caveira(47,4)
         ]
 
         # Créer l'otage au centre de la grille
@@ -250,33 +265,41 @@ class Game:
     def update_logical_map(self):
         """Mets à jour la carte logique en fonction des positions des unités et de l'otage."""
         # Réinitialiser la carte logique
-        # Supprimez uniquement les anciens placements dynamiques (unités et otage).
-        for y in range(GRID_SIZE_Y):
-            for x in range(GRID_SIZE_X):
-            # Ne modifiez que les cellules contenant des unités (2) ou l'otage (3).
+        for y in range(len(self.logical_map)):  # Assurez-vous de parcourir les dimensions réelles de self.logical_map
+            for x in range(len(self.logical_map[y])):  # Même chose pour la largeur de chaque ligne
+                # Ne modifiez que les cellules contenant des unités (2) ou l'otage (3).
                 if self.logical_map[y][x] in [2, 3]:
                     self.logical_map[y][x] = 0  # Réinitialisez ces cellules
 
         # Ajouter les unités
         for unit in self.player_units + self.enemy_units:
-            self.logical_map[unit.y][unit.x] = 2  # 2 = Unité
-        self.logical_map[self.hostage.y][self.hostage.x] = 3  # 3 = Otage
+            if 0 <= unit.y < len(self.logical_map) and 0 <= unit.x < len(self.logical_map[unit.y]):
+                self.logical_map[unit.y][unit.x] = 2  # 2 = Unité
+            else:
+                print(f"DEBUG: Unité hors limites - x: {unit.x}, y: {unit.y}")
 
+        # Ajouter l'otage
+        if 0 <= self.hostage.y < len(self.logical_map) and 0 <= self.hostage.x < len(self.logical_map[self.hostage.y]):
+            self.logical_map[self.hostage.y][self.hostage.x] = 3  # 3 = Otage
+        else:
+            print(f"DEBUG: Otage hors limites - x: {self.hostage.x}, y: {self.hostage.y}")
 
     def get_attack_range(self, unit):
-        """Retourne une liste des cellules accessibles pour une attaque avec une portée de 10."""
+        """
+        Retourne une liste des cellules accessibles pour une attaque avec une portée spécifique.
+        """
         attack_range = []
-        max_distance = 10  # Portée d'attaque maximale
+        max_distance = 10  # Exemple de portée d'attaque
 
         for dx in range(-max_distance, max_distance + 1):
             for dy in range(-max_distance, max_distance + 1):
-                if abs(dx) + abs(dy) <= max_distance:  # Rayon Manhattan de 10
+                if abs(dx) + abs(dy) <= max_distance:  # Respecte la portée d'attaque
                     new_x = unit.x + dx
                     new_y = unit.y + dy
-                    if 0 <= new_x < GRID_SIZE_X and 0 <= new_y < GRID_SIZE_Y and self.is_line_of_sight_clear(unit.x, unit.y, new_x, new_y):
-                    # Vérifie si la ligne de vue est dégagée
+                    if 0 <= new_x < GRID_SIZE_X and 0 <= new_y < GRID_SIZE_Y:  # Reste dans la grille
                         attack_range.append((new_x, new_y))
         return attack_range
+
     
 
     def is_line_of_sight_clear(self, x1, y1, x2, y2):
@@ -286,19 +309,24 @@ class Game:
         """
         dx = x2 - x1
         dy = y2 - y1
-        # Si les points sont identiques, la ligne de vue est dégagée
-        if dx == 0 and dy == 0:
+
+        if dx == 0 and dy == 0:  # Même point
             return True
+
         steps = max(abs(dx), abs(dy))
         x_step = dx / steps
         y_step = dy / steps
 
-        for step in range(1, steps):
+        for step in range(1, steps):  # Commence à 1 pour ne pas vérifier le point de départ
             x = round(x1 + step * x_step)
             y = round(y1 + step * y_step)
-            if self.logical_map[y][x] == 1:  # Si une cellule est un obstacle
+
+            # Si une cellule est un mur ou hors limite
+            if not (0 <= x < GRID_SIZE_X and 0 <= y < GRID_SIZE_Y) or self.logical_map[y][x] == 1:
                 return False
         return True
+
+
 
 
     def get_movement_range(self, unit):
@@ -306,23 +334,36 @@ class Game:
         Retourne une liste des cellules accessibles pour une unité en fonction de sa position et de sa vitesse.
         """
         movement_range = []
-        if not unit:  # Vérifiez que l'unité est valide
-            return movement_range  # Retourne une liste vide si l'unité est absente
-    
-        for dx in range(-unit.speed, unit.speed + 1):
-            for dy in range(-unit.speed, unit.speed + 1):
-                if abs(dx) + abs(dy) <= unit.speed:  # Respecte la distance maximale
-                    new_x = unit.x + dx
-                    new_y = unit.y + dy
-                    if (0 <= new_x < GRID_SIZE_X and 0 <= new_y < GRID_SIZE_Y and self.logical_map[new_y][new_x] == 0):  # Reste dans la grille
-                        movement_range.append((new_x, new_y))
+        visited = set()
+        queue = [(unit.x, unit.y, 0)]  # Utilise une file pour le BFS (x, y, distance)
+
+        while queue:
+            x, y, dist = queue.pop(0)
+            if (x, y) in visited or dist > unit.speed:  # Ignore si déjà visité ou hors portée
+                continue
+            visited.add((x, y))
+            movement_range.append((x, y))
+
+            # Vérifie les voisins
+            for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                nx, ny = x + dx, y + dy
+                if 0 <= nx < GRID_SIZE_X and 0 <= ny < GRID_SIZE_Y and self.logical_map[ny][nx] != 1:
+                    queue.append((nx, ny, dist + 1))
+
         return movement_range
+
+
     
 
     def handle_attack(self, unit, opponents):
         """Gère l'attaque d'une unité en ciblant uniquement les ennemis dans la portée."""
         attack_range = self.get_attack_range(unit)  # Obtenir la portée d'attaque
-        valid_targets = [opponent for opponent in opponents if (opponent.x, opponent.y) in attack_range]
+        valid_targets = [
+            opponent for opponent in opponents
+            if (opponent.x, opponent.y) in attack_range
+            and self.is_line_of_sight_clear(unit.x, unit.y, opponent.x, opponent.y)  # Vérifie la ligne de vue
+        ]
+
         if not valid_targets:
             print("Aucune cible valide dans la portée.")
             return  # Fin si aucune cible valide
@@ -368,7 +409,6 @@ class Game:
                             print(f"{target.role} a été éliminé !")
                             opponents.remove(target)
                         return  # Fin de l'attaque
-
 
 
     # Ajout des modifications pour gérer correctement selected_action dans tous les appels
@@ -469,8 +509,8 @@ class Game:
         has_acted = False
 
         while not has_acted:
-            # Afficher l'écran avec les zones de mouvement
-            self.flip_display(pause_button, active_units=[unit], selected_index=0, color=(255, 255, 0), movement_range=movement_range)
+            self.flip_display(pause_button, active_units=[unit], selected_index=0,
+                            color=(255, 255, 0), movement_range=movement_range)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -494,18 +534,17 @@ class Game:
                     new_x = unit.x + dx
                     new_y = unit.y + dy
 
-                    # Vérifier si le déplacement reste dans les cases disponibles
-                    if (new_x, new_y) in movement_range:
+                    # Vérifier si le déplacement est valide (dans les limites et non bloqué par un mur)
+                    if (new_x, new_y) in movement_range and self.logical_map[new_y][new_x] != 1:
                         unit.move(dx, dy, GRID_SIZE_X, GRID_SIZE_Y)
 
                     if event.key == pygame.K_SPACE:  # Terminer le tour
-                        for opponent in opponents:
-                            has_acted = True
+                        has_acted = True
+
     def flip_display(self, pause_button=None, active_units=None, selected_index=None, color=None, movement_range=None, attack_range=None, card=None, selected_action="move"):
         """Affiche l'état actuel de la grille et de l'interface."""
         # Dessiner la carte de fond
         self.screen.blit(MAP, (0, 0))
-        
 
         # Dessiner la grille
         for x in range(0, WIDTH, CELL_SIZE):
@@ -520,10 +559,8 @@ class Game:
                     # Créer une surface semi-transparente
                     transparent_surface = pygame.Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)
                     transparent_surface.fill((100, 100, 100, 128))  # Gris avec transparence (128/255)
-            
                     # Dessiner la surface sur l'écran
                     self.screen.blit(transparent_surface, (x * CELL_SIZE, y * CELL_SIZE))
-
 
         # Dessiner les zones accessibles pour le mouvement (jaune transparent)
         if movement_range and selected_action == "move":
@@ -532,20 +569,20 @@ class Game:
                 jaune_clair.fill((255, 255, 0, 128))  # Jaune transparent
                 self.screen.blit(jaune_clair, (cell[0] * CELL_SIZE, cell[1] * CELL_SIZE))
 
-        # Dessiner les zones accessibles pour l'attaque (rouge transparent)
+        # Dessiner les zones accessibles pour l'attaque (rouge transparent) en respectant la ligne de vue
         if attack_range and selected_action == "attack":
             for cell in attack_range:
-                rouge_clair = pygame.Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)
-                rouge_clair.fill((255, 0, 0, 128))  # Rouge transparent
-                self.screen.blit(rouge_clair, (cell[0] * CELL_SIZE, cell[1] * CELL_SIZE))
+                if self.is_line_of_sight_clear(active_units[selected_index].x, active_units[selected_index].y, cell[0], cell[1]):
+                    rouge_clair = pygame.Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)
+                    rouge_clair.fill((255, 0, 0, 128))  # Rouge transparent
+                    self.screen.blit(rouge_clair, (cell[0] * CELL_SIZE, cell[1] * CELL_SIZE))
 
         # Dessiner les unités
         for unit in self.player_units + self.enemy_units:
             unit.draw(self.screen)
 
-         # Dessiner l'otage
+        # Dessiner l'otage
         self.hostage.draw(self.screen)
-
 
         # Dessiner le contour jaune autour de l'unité sélectionnée
         if active_units and selected_index is not None:
