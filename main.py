@@ -239,8 +239,14 @@ class Game:
         self.screen = screen
 
         # Initialiser une carte logique avec des cases traversables (0) ou bloquées (1).
-        
-        self.logical_map = [
+        # Taille des cellules
+        self.cell_size = CELL_SIZE
+
+        # Calculer les dimensions de la grille en fonction de l'écran
+        self.grid_size_x = WIDTH // self.cell_size
+        self.grid_size_y = HEIGHT // self.cell_size
+
+        original_map = [
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 0
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 1
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 2
@@ -273,7 +279,8 @@ class Game:
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]  # Ligne 29
         ]
 
-
+        # Adapter la carte logique à la taille de l'écran
+        self.logical_map = adapt_logical_map(original_map, self.grid_size_x, self.grid_size_y)
 
         # Créer les unités personnalisées
         self.player_units = [
@@ -294,6 +301,11 @@ class Game:
         # Placer l'otage dans son lit de la grille
         self.hostage = Hostage(GRID_SIZE_X // 2 + 6, GRID_SIZE_Y // 2 +2, r"assets/Hostage.png")
    
+
+        # Ajuster les positions des unités et de l'otage en fonction de la nouvelle carte
+        self.update_unit_positions()
+
+        
         self.update_logical_map()
 
          # Appeler la phase de placement initial
@@ -380,6 +392,20 @@ class Game:
         # Ajouter l'otage
         if 0 <= self.hostage.y < len(self.logical_map) and 0 <= self.hostage.x < len(self.logical_map[self.hostage.y]):
             self.logical_map[self.hostage.y][self.hostage.x] = 3  # 3 = Otage
+
+    def update_unit_positions(self):
+        original_width = len(self.logical_map[0])
+        original_height = len(self.logical_map)
+
+        for unit in self.player_units + self.enemy_units:
+            unit.x = int(unit.x * self.grid_size_x / original_width)
+            unit.y = int(unit.y * self.grid_size_y / original_height)
+
+        # Ajuster la position de l'otage
+        self.hostage.x = int(self.hostage.x * self.grid_size_x / original_width)
+        self.hostage.y = int(self.hostage.y * self.grid_size_y / original_height)
+
+
 
     def get_attack_range(self, unit):
         """
