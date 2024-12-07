@@ -376,6 +376,59 @@ class Game:
         # Mise à jour de la carte logique après placement
         self.update_logical_map()
 
+
+        # Liste des barricades placées
+        barricades = []
+
+        # Ajouter un message pour indiquer que le joueur peut placer des barricades
+        font = get_font(30)
+        barricade_message = font.render("Player 2: Place barricades by clicking (Press Enter when done)", True, WHITE)
+        barricade_message_rect = barricade_message.get_rect(center=(WIDTH // 2, 100))
+
+        placing_barricades = True  # Mode de placement des barricades
+
+        while placing_barricades:
+            # Afficher le message et la grille
+            self.screen.blit(MAP, (0, 0))
+            self.screen.blit(barricade_message, barricade_message_rect)
+
+            for x in range(0, WIDTH, CELL_SIZE):
+                for y in range(0, HEIGHT, CELL_SIZE):
+                    rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
+                    pygame.draw.rect(self.screen, BLACK, rect, 1)
+
+            # Dessiner les unités déjà placées
+            for unit in placed_units:
+                unit.draw(self.screen)
+
+            # Dessiner les barricades
+            for barricade in barricades:
+                pygame.draw.rect(self.screen, (139, 69, 19),  # Marron
+                         (barricade[0] * CELL_SIZE, barricade[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+
+            pygame.display.flip()
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_x, mouse_y = pygame.mouse.get_pos()
+                    grid_x = mouse_x // CELL_SIZE
+                    grid_y = mouse_y // CELL_SIZE
+
+                    # Vérifier si la cellule est libre pour une barricade
+                    if (0 <= grid_x < len(self.logical_map[0]) and 0 <= grid_y < len(self.logical_map)
+                            and self.logical_map[grid_y][grid_x] == 0):  # Cellule vide
+                        barricades.append((grid_x, grid_y))
+                        self.logical_map[grid_y][grid_x] = 4  # 4 = Barricade
+
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:  # Terminer le placement des barricades
+                        placing_barricades = False
+
+
     def update_logical_map(self):
         """Mets à jour la carte logique en fonction des positions des unités et de l'otage."""
         # Réinitialiser la carte logique
@@ -732,6 +785,14 @@ class Game:
         if pause_button is not None:
             pause_button.changeColor(pygame.mouse.get_pos())
             pause_button.update(self.screen)
+
+        # Dessiner les barricades
+        for y, row in enumerate(self.logical_map):
+            for x, cell in enumerate(row):
+                if cell == 4:  # 4 = Barricade
+                    pygame.draw.rect(self.screen, (139, 69, 19),  # Marron
+                             (x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+
 
         # Rafraîchir l'affichage
         pygame.display.flip()
