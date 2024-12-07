@@ -1,5 +1,6 @@
 import pygame
 import sys
+from scipy.ndimage import zoom
 from unit import Unit, Hostage
 from game_button import Button
 from card import Card
@@ -209,6 +210,27 @@ def rules():
 
         pygame.display.update()
 
+def adapt_logical_map(logical_map, grid_width, grid_height):
+    """
+    Adapte une carte logique à la nouvelle taille basée sur les dimensions de la grille.
+    
+    :param logical_map: Liste 2D représentant la carte logique originale.
+    :param grid_width: Largeur de la nouvelle grille.
+    :param grid_height: Hauteur de la nouvelle grille.
+    :return: Nouvelle carte logique adaptée.
+    """
+    original_height = len(logical_map)
+    original_width = len(logical_map[0]) if original_height > 0 else 0
+
+    # Calculer les facteurs d'échelle
+    scale_y = grid_height / original_height
+    scale_x = grid_width / original_width
+
+    # Redimensionner la carte avec interpolation
+    resized_map = zoom(logical_map, (scale_y, scale_x), order=0)  # Ne pas lisser les valeurs (0 = nearest neighbor)
+    return resized_map.astype(int).tolist()
+
+
 
 class Game:
     """Classe pour gérer le jeu."""
@@ -251,7 +273,6 @@ class Game:
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]  # Ligne 29
         ]
 
-        
 
 
         # Créer les unités personnalisées
