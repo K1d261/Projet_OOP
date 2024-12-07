@@ -540,6 +540,15 @@ class Game:
             and self.is_line_of_sight_clear(unit.x, unit.y, opponent.x, opponent.y)  # Vérifie la ligne de vue
         ]
 
+        # Vérifier si une barricade est dans la portée d'attaque
+        barricade_targets = [
+        (x, y) for x, y in attack_range
+        if 0 <= x < GRID_SIZE_X and 0 <= y < GRID_SIZE_Y and self.logical_map[y][x] == 4
+        ]  
+
+        # Ajouter des barricades comme cibles valides
+        valid_targets.extend(barricade_targets)
+
         if not valid_targets:
             print("Aucune cible valide dans la portée.")
             return  # Fin si aucune cible valide
@@ -561,7 +570,7 @@ class Game:
             pygame.draw.rect(
                 self.screen,
                 (0, 255, 0),  # Vert pour indiquer la cible sélectionnée
-                pygame.Rect(target.x * CELL_SIZE, target.y * CELL_SIZE, CELL_SIZE, CELL_SIZE),
+                pygame.Rect(target[0] * CELL_SIZE, target[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE),
                 3
             )
             pygame.display.update()
@@ -578,13 +587,22 @@ class Game:
                         # Changer de cible à droite
                         target_index = (target_index + 1) % len(valid_targets)
                     elif event.key == pygame.K_SPACE:
-                        # Infliger des dégâts à la cible
-                        target.health = max(0, target.health - unit.attack_power)
-                        print(f"{unit.role} attaque {target.role} et inflige {unit.attack_power} dégâts !")
-                        if target.health <= 0:
-                            print(f"{target.role} a été éliminé !")
-                            opponents.remove(target)
-                        return  # Fin de l'attaque
+                        # Lorsqu'une barricade est attaquée
+                        if target in barricade_targets:
+                            print("Barricade détruite !")
+                            self.logical_map[target[1]][target[0]] = 0  # Retirer la barricade
+                            return
+
+
+                         # Infliger des dégâts à la cible (ennemi)
+                        for opponent in opponents:
+                            if (opponent.x, opponent.y) == target:
+                                opponent.health = max(0, opponent.health - unit.attack_power)
+                                print(f"{unit.role} attaque {opponent.role} et inflige {unit.attack_power} dégâts !")
+                                if opponent.health <= 0:
+                                    print(f"{opponent.role} a été éliminé !")
+                                    opponents.remove(opponent)
+                                return  # Fin de l'attaque
 
 
     # Ajout des modifications pour gérer correctement selected_action dans tous les appels
