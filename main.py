@@ -832,6 +832,7 @@ class Game:
         # Dessiner les unités
         for unit in self.player_units + self.enemy_units:
             unit.draw(self.screen)
+            
 
         # Dessiner l'otage
         self.hostage.draw(self.screen)
