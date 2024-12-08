@@ -379,14 +379,21 @@ class Game:
     # Liste des barricades placées
         barricades = []
         barricade_limit = 5  # Limite de barricades
+        armored_barricade_limit = 3  # Limite de barricades blindées
+
+        # Phase de placement des barricades
+        placing_normals = True
+        placing_armored = False
+
 
         # Ajouter un message pour indiquer que le joueur peut placer des barricades
-        barricade_message = font.render(f"Player 2: Place barricades ({barricade_limit} remaining)", True, WHITE)
+        barricade_message = font.render(
+            f"Player 2: Place barricades normales ({barricade_limit} remaining) et blindées ({armored_barricade_limit} remaining)", 
+            True, WHITE
+        )   
         barricade_message_rect = barricade_message.get_rect(center=(WIDTH // 2, 100))
 
-        placing_barricades = True  # Mode de placement des barricades
-
-        while placing_barricades:
+        while placing_normals or placing_armored:
             # Afficher le message et la grille
             self.screen.blit(MAP, (0, 0))
             self.screen.blit(barricade_message, barricade_message_rect)
@@ -402,8 +409,16 @@ class Game:
 
             # Dessiner les barricades
             for barricade in barricades:
-                pygame.draw.rect(self.screen, (139, 69, 19),  # Marron
-                                (barricade[0] * CELL_SIZE, barricade[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+                if barricade["type"] == "normal":
+                    pygame.draw.rect(self.screen, (139, 69, 19),  # Marron
+                            (barricade["x"] * CELL_SIZE, barricade["y"] * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+                elif barricade["type"] == "armored":
+                    pygame.draw.rect(self.screen, (50, 50, 50),  # Gris foncé
+                            (barricade["x"] * CELL_SIZE, barricade["y"] * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+
+            # Dessiner le bouton pause
+            pause_button.changeColor(pygame.mouse.get_pos())
+            pause_button.update(self.screen)
 
             pygame.display.flip()
 
@@ -416,22 +431,48 @@ class Game:
                     mouse_x, mouse_y = pygame.mouse.get_pos()
                     grid_x = mouse_x // CELL_SIZE
                     grid_y = mouse_y // CELL_SIZE
+                    # Gestion du bouton pause
+                    if pause_button.checkForInput((mouse_x, mouse_y)):
+                        pause_menu()
+                        continue
 
-                     # Vérifier si la cellule est libre pour une barricade et qu'il reste des barricades
-                    if (
-                        0 <= grid_x < len(self.logical_map[0])
-                        and 0 <= grid_y < len(self.logical_map)
-                        and self.logical_map[grid_y][grid_x] == 0  # Cellule vide
-                    ):
-                        barricades.append((grid_x, grid_y))
-                        self.logical_map[grid_y][grid_x] = 4  # 4 = Barricade
-                        barricade_limit -= 1  # Réduire le compteur
-                        barricade_message = font.render(f"Player 2: Place barricades ({barricade_limit} remaining)", True, WHITE)
+                        # Placement des barricades normales
+                    if placing_normals and barricade_limit > 0:
+                        if (
+                            0 <= grid_x < len(self.logical_map[0])
+                            and 0 <= grid_y < len(self.logical_map)
+                            and self.logical_map[grid_y][grid_x] == 0  # Cellule vide
+                        ):
+                            barricades.append({"x": grid_x, "y": grid_y, "type": "normal"})
+                            self.logical_map[grid_y][grid_x] = 4  # Barricade normale
+                            barricade_limit -= 1
+                            barricade_message = font.render(
+                                f"Player 2: Place normal barricades ({barricade_limit} remaining)", True, WHITE
+                            )
+                            if barricade_limit == 0:  # Passer aux barricades blindées
+                                placing_normals = False
+                                placing_armored = True
+                                barricade_message = font.render(
+                                    f"Player 2: Place armored barricades ({armored_barricade_limit} remaining)", True, WHITE
+                                )
 
-                # Fin du placement si toutes les barricades ont été posées
-                    if barricade_limit == 0:
-                        placing_barricades = False
+                    # Placement des barricades blindées
+                    elif placing_armored and armored_barricade_limit > 0:
+                        if (
+                            0 <= grid_x < len(self.logical_map[0])
+                            and 0 <= grid_y < len(self.logical_map)
+                            and self.logical_map[grid_y][grid_x] == 0  # Cellule vide
+                        ):
+                            barricades.append({"x": grid_x, "y": grid_y, "type": "armored"})
+                            self.logical_map[grid_y][grid_x] = 5  # Barricade blindée
+                            armored_barricade_limit -= 1
+                            barricade_message = font.render(
+                                f"Player 2: Place armored barricades ({armored_barricade_limit} remaining)", True, WHITE
+                            )
+                            if armored_barricade_limit == 0:  # Fin du placement
+                                placing_armored = False
 
+        # Mise à jour de la carte logique après placement des barricades
         self.update_logical_map()
 
     def update_logical_map(self):
@@ -450,6 +491,12 @@ class Game:
         # Ajouter l'otage
         if 0 <= self.hostage.y < len(self.logical_map) and 0 <= self.hostage.x < len(self.logical_map[self.hostage.y]):
             self.logical_map[self.hostage.y][self.hostage.x] = 3  # 3 = Otage
+
+        # **Gestion des barricades blindées déjà existantes dans la carte logique**
+        for y, row in enumerate(self.logical_map):
+            for x, cell in enumerate(row):
+                if cell == 5:  # Si une barricade blindée est détectée
+                    self.logical_map[y][x] = 5  # Maintenir le type de barricade blindée
 
     def update_unit_positions(self):
         original_width = len(self.logical_map[0])
@@ -800,10 +847,7 @@ class Game:
             )
             pygame.draw.rect(self.screen, (255, 255, 0), rect, 3)  # Contour jaune pour l'unité sélectionnée
 
-        # Dessiner la carte
-        if card:
-            card.draw(50, HEIGHT - 250)  # Garder la carte visible
-
+        
         # Gérer le bouton de pause
         if pause_button is not None:
             pause_button.changeColor(pygame.mouse.get_pos())
@@ -815,6 +859,18 @@ class Game:
                 if cell == 4:  # 4 = Barricade
                     pygame.draw.rect(self.screen, (139, 69, 19),  # Marron
                              (x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+
+        # Dessiner les barricades blindées
+        for y, row in enumerate(self.logical_map):
+            for x, cell in enumerate(row):
+                if cell == 5:  # 5 = Barricade blindée
+                    pygame.draw.rect(self.screen, (50, 50, 50),  # Gris foncé
+                            (x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+
+
+        # Dessiner la carte
+        if card:
+            card.draw(50, HEIGHT - 250)  # Garder la carte visible
 
 
         # Rafraîchir l'affichage
