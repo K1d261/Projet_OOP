@@ -583,7 +583,7 @@ class Game:
 
     
 
-    def handle_attack(self, unit, opponents):
+    def handle_attack(self, unit, opponents, selected_action="attack"):
         """Gère l'attaque d'une unité en ciblant uniquement les ennemis dans la portée."""
         attack_range = self.get_attack_range(unit)  # Obtenir la portée d'attaque
         valid_targets = [
@@ -593,10 +593,20 @@ class Game:
         ]
 
         # Vérifier si une barricade est dans la portée d'attaque
-        barricade_targets = [
-        (x, y) for x, y in attack_range
-        if 0 <= x < GRID_SIZE_X and 0 <= y < GRID_SIZE_Y and self.logical_map[y][x] == 4
-        ]  
+        barricade_targets = []
+        if selected_action == "special" and unit.role == "Thermite":
+            # Ajout des barricades blindées uniquement pour l'action spéciale
+            barricade_targets = [
+                (x, y) for x, y in attack_range
+                if 0 <= x < GRID_SIZE_X and 0 <= y < GRID_SIZE_Y and self.logical_map[y][x] == 5
+            ]
+
+        else:
+        # Sinon, ajouter les barricades normales pour une attaque classique
+            barricade_targets = [
+                (x, y) for x, y in attack_range
+                if 0 <= x < GRID_SIZE_X and 0 <= y < GRID_SIZE_Y and self.logical_map[y][x] == 4
+            ]
 
         # Ajouter des barricades comme cibles valides
         valid_targets.extend(barricade_targets)
@@ -614,7 +624,7 @@ class Game:
                 selected_index=0,
                 color=(255, 0, 0),  # Rouge pour la portée d'attaque
                 attack_range=attack_range,
-                selected_action="attack"
+                selected_action=selected_action
             )
 
             # Dessiner un contour autour de la cible actuelle
@@ -641,7 +651,10 @@ class Game:
                     elif event.key == pygame.K_SPACE:
                         # Lorsqu'une barricade est attaquée
                         if target in barricade_targets:
-                            print("Barricade détruite !")
+                            if selected_action == "special" and unit.role == "Thermite":
+                                print("Barricade blindée détruite par Thermite !")
+                            else:
+                                print("Barricade normale détruite !")
                             self.logical_map[target[1]][target[0]] = 0  # Retirer la barricade
                             return
 
@@ -750,7 +763,10 @@ class Game:
                                 self.handle_attack(selected_unit, opponents)
                                 action_completed = True
                             elif actions[action_index] == "special":
-                                print("Mode spécial non implémenté.")
+                                if selected_unit.role == "Thermite":
+                                    self.handle_attack(selected_unit, opponents, selected_action="special")
+                                else:
+                                    print(f"L'unité {selected_unit.role} n'a pas de capacité spéciale utilisable.")
                                 action_completed = True
                             elif actions[action_index] == "back":
                                 has_selected_unit = False
@@ -832,7 +848,7 @@ class Game:
         # Dessiner les unités
         for unit in self.player_units + self.enemy_units:
             unit.draw(self.screen)
-            
+
 
         # Dessiner l'otage
         self.hostage.draw(self.screen)
