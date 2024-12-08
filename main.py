@@ -317,15 +317,15 @@ class Game:
         message = font.render("Player 2: place your defendants!", True, WHITE)
         message_rect = message.get_rect(center=(WIDTH // 2, 50))
 
-        # Création du bouton pause
+    # Création du bouton pause
         pause_button = Button(pygame.image.load("assets/Pause Rect.png"), (WIDTH - 150, 50),
-                            "PAUSE", get_font(20), "#d7fcd4", "Yellow")
+                          "PAUSE", get_font(20), "#d7fcd4", "Yellow")
 
         units_to_place = self.enemy_units.copy()
         placed_units = []
 
         while units_to_place:
-            # Afficher le message et la grille
+        # Afficher le message et la grille
             self.screen.blit(MAP, (0, 0))
             self.screen.blit(message, message_rect)
 
@@ -334,7 +334,7 @@ class Game:
                     rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
                     pygame.draw.rect(self.screen, BLACK, rect, 1)
 
-            # Dessiner les unités déjà placées
+        # Dessiner les unités déjà placées
             for unit in placed_units:
                 unit.draw(self.screen)
 
@@ -357,7 +357,7 @@ class Game:
                         pause_menu()
                         continue
 
-                    # Placement des unités
+                # Placement des unités
                     grid_x = mouse_x // CELL_SIZE
                     grid_y = mouse_y // CELL_SIZE
 
@@ -373,16 +373,15 @@ class Game:
                         placed_units.append(unit)
                         self.logical_map[grid_y][grid_x] = 2  # Marquer la cellule comme occupée
 
-        # Mise à jour de la carte logique après placement
+    # Mise à jour de la carte logique après placement
         self.update_logical_map()
 
-
-        # Liste des barricades placées
+    # Liste des barricades placées
         barricades = []
+        barricade_limit = 5  # Limite de barricades
 
         # Ajouter un message pour indiquer que le joueur peut placer des barricades
-        font = get_font(30)
-        barricade_message = font.render("Player 2: Place barricades by clicking (Press Enter when done)", True, WHITE)
+        barricade_message = font.render(f"Player 2: Place barricades ({barricade_limit} remaining)", True, WHITE)
         barricade_message_rect = barricade_message.get_rect(center=(WIDTH // 2, 100))
 
         placing_barricades = True  # Mode de placement des barricades
@@ -404,7 +403,7 @@ class Game:
             # Dessiner les barricades
             for barricade in barricades:
                 pygame.draw.rect(self.screen, (139, 69, 19),  # Marron
-                         (barricade[0] * CELL_SIZE, barricade[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+                                (barricade[0] * CELL_SIZE, barricade[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE))
 
             pygame.display.flip()
 
@@ -418,16 +417,22 @@ class Game:
                     grid_x = mouse_x // CELL_SIZE
                     grid_y = mouse_y // CELL_SIZE
 
-                    # Vérifier si la cellule est libre pour une barricade
-                    if (0 <= grid_x < len(self.logical_map[0]) and 0 <= grid_y < len(self.logical_map)
-                            and self.logical_map[grid_y][grid_x] == 0):  # Cellule vide
+                     # Vérifier si la cellule est libre pour une barricade et qu'il reste des barricades
+                    if (
+                        0 <= grid_x < len(self.logical_map[0])
+                        and 0 <= grid_y < len(self.logical_map)
+                        and self.logical_map[grid_y][grid_x] == 0  # Cellule vide
+                    ):
                         barricades.append((grid_x, grid_y))
                         self.logical_map[grid_y][grid_x] = 4  # 4 = Barricade
+                        barricade_limit -= 1  # Réduire le compteur
+                        barricade_message = font.render(f"Player 2: Place barricades ({barricade_limit} remaining)", True, WHITE)
 
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_RETURN:  # Terminer le placement des barricades
+                # Fin du placement si toutes les barricades ont été posées
+                    if barricade_limit == 0:
                         placing_barricades = False
 
+        self.update_logical_map()
 
     def update_logical_map(self):
         """Mets à jour la carte logique en fonction des positions des unités et de l'otage."""
