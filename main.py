@@ -83,7 +83,7 @@ def pause_menu():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if resume_button.checkForInput(mouse_pos):
                     pygame.mixer.init()
-                    pygame.mixer.music.load("assets/Doom.mp3")
+                    pygame.mixer.music.load("assets/Metroid - Kraids Lair (Analog Synth remake).mp3")
                     pygame.mixer.music.play(loops=-1,start=0.0)
                     return  # Quitter le menu pause et reprendre
                 if menu_button.checkForInput(mouse_pos):
@@ -718,7 +718,7 @@ class Game:
 def play():
     """Lance le jeu."""
     pygame.mixer.init()
-    pygame.mixer.music.load("assets/Doom.mp3")
+    pygame.mixer.music.load("assets/Metroid - Kraids Lair (Analog Synth remake).mp3")
     pygame.mixer.music.play(loops=-1, start=0.0)
     screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
     game = Game(screen)
