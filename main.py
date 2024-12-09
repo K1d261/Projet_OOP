@@ -4,6 +4,7 @@ from scipy.ndimage import zoom
 from unit import Unit, Hostage
 from game_button import Button
 from card import Card
+from textbox import TextBox
 from doc import Doc
 from montagne import Montagne
 from thermite import Thermite
@@ -43,16 +44,39 @@ CARD_BACKGROUND = pygame.image.load("assets/Card.png")
 CARD_BACKGROUND = pygame.transform.scale(CARD_BACKGROUND, (350, 650))
 
 
+# Charger les deux versions de la musique
+normal_music = pygame.mixer.Sound("assets/Metroid - Kraids Lair (Analog Synth remake).mp3")
+muffled_music = pygame.mixer.Sound("assets/Metroid - Kraids Lair (Analog Synth remake) muffled.mp3")
+
+# Par défaut, volume normal pour la musique normale, 0 pour la musique étouffée
+normal_music.set_volume(1.0)  # Plein volume
+muffled_music.set_volume(0.0)  # Silence
+
+
+
+def toggle_music_volume(pause=False):
+    """
+    Ajuste le volume des musiques en fonction de l'état du jeu.
+    :param pause: True si le jeu est en pause, False si le jeu reprend.
+    """
+    if pause:
+        # Baisser la musique normale et augmenter la musique étouffée
+        normal_music.set_volume(0.0)
+        muffled_music.set_volume(1.0)
+    else:
+        # Remettre la musique normale et baisser la musique étouffée
+        normal_music.set_volume(1.0)
+        muffled_music.set_volume(0.0)
+
+
 def get_font(size):
     """Charge une police d'écriture."""
     return pygame.font.Font("assets/font.ttf", size)
 
 
 def pause_menu():
-    """Affiche le menu pause avec une image de fond."""
-    pygame.mixer.init()
-    pygame.mixer.music.load("assets/Pause lol.mp3")
-    pygame.mixer.music.play(loops=-1,start=0.0)
+    """Affiche le menu pause avec musique étouffée."""
+    toggle_music_volume(pause=True)  # Activer l'effet étouffé
 
     # Charger l'image de fond
     pause_background = pygame.image.load("assets/Pause_menu.jpg")
@@ -83,14 +107,13 @@ def pause_menu():
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if resume_button.checkForInput(mouse_pos):
-                    pygame.mixer.init()
-                    pygame.mixer.music.load("assets/Metroid - Kraids Lair (Analog Synth remake).mp3")
-                    pygame.mixer.music.play(loops=-1,start=0.0)
+                    toggle_music_volume(pause=False)  # Revenir à la musique normale
                     return  # Quitter le menu pause et reprendre
                 if menu_button.checkForInput(mouse_pos):
-                    pygame.mixer.init()
-                    pygame.mixer.music.load("assets/chess.mp3")
-                    pygame.mixer.music.play(loops=-1,start=0.0)
+                    # Arrêter la musique du jeu
+                    normal_music.stop()
+                    muffled_music.stop()
+                    toggle_music_volume(pause=False)  # Réinitialiser les volumes
                     main_menu()
                 if quit_button.checkForInput(mouse_pos):
                     pygame.quit()
@@ -102,10 +125,15 @@ def pause_menu():
 
 
 def main_menu():
-    #musique
+    # Arrêter la musique du jeu si elle est en cours
+    normal_music.stop()
+    muffled_music.stop()
+    
+    # Lancer la musique du menu principal
     pygame.mixer.init()
     pygame.mixer.music.load("assets/chess.mp3")
-    pygame.mixer.music.play(loops=-1,start=0.0)
+    pygame.mixer.music.play(loops=-1, start=0.0)
+
     """Affiche le menu principal."""
     bg_image = pygame.image.load("assets/Background.png")
     bg_image = pygame.transform.scale(bg_image, (WIDTH, HEIGHT))
@@ -139,6 +167,7 @@ def main_menu():
                     pygame.quit()
                     sys.exit()
         pygame.display.update()
+
 
 def rules():
     """Affiche les règles et les informations sur les personnages."""
@@ -238,7 +267,16 @@ class Game:
     def __init__(self, screen):
         self.screen = screen
 
-        # Initialiser une carte logique avec des cases traversables (0) ou bloquées (1).
+        # Largeur égale à celle de la carte, hauteur étendue
+        self.textbox = TextBox(
+            screen=self.screen,
+            width=850,
+            height=600,  # Longueur étendue
+            font=get_font(20),  # Police plus petite pour les messages
+            x=700,  # À côté de la carte avec une séparation
+            y=HEIGHT - 250  # Aligné à la carte
+        )
+
         # Taille des cellules
         self.cell_size = CELL_SIZE
 
@@ -334,7 +372,7 @@ class Game:
                     rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
                     pygame.draw.rect(self.screen, BLACK, rect, 1)
 
-        # Dessiner les unités déjà placées
+            # Dessiner les unités déjà placées
             for unit in placed_units:
                 unit.draw(self.screen)
 
@@ -357,7 +395,7 @@ class Game:
                         pause_menu()
                         continue
 
-                # Placement des unités
+                    # Placement des unités
                     grid_x = mouse_x // CELL_SIZE
                     grid_y = mouse_y // CELL_SIZE
 
@@ -378,8 +416,8 @@ class Game:
 
     # Liste des barricades placées
         barricades = []
-        barricade_limit = 5  # Limite de barricades
-        armored_barricade_limit = 3  # Limite de barricades blindées
+        barricade_limit = 6  # Limite de barricades
+        armored_barricade_limit = 4  # Limite de barricades blindées
 
         # Phase de placement des barricades
         placing_normals = True
@@ -584,41 +622,33 @@ class Game:
     
 
     def handle_attack(self, unit, opponents, selected_action="attack"):
-        """Gère l'attaque d'une unité en ciblant uniquement les ennemis dans la portée."""
+        """
+        Gère l'attaque d'une unité en ciblant uniquement les ennemis dans la portée.
+        """
         attack_range = self.get_attack_range(unit)  # Obtenir la portée d'attaque
-        valid_targets = [
-            opponent for opponent in opponents
-            if (opponent.x, opponent.y) in attack_range
-            and self.is_line_of_sight_clear(unit.x, unit.y, opponent.x, opponent.y)  # Vérifie la ligne de vue
-        ]
+        valid_targets = []
 
-        # Vérifier si une barricade est dans la portée d'attaque
-        barricade_targets = []
-        if selected_action == "special" and unit.role == "Thermite":
-            # Ajout des barricades blindées uniquement pour l'action spéciale
-            barricade_targets = [
-                (x, y) for x, y in attack_range
-                if 0 <= x < GRID_SIZE_X and 0 <= y < GRID_SIZE_Y and self.logical_map[y][x] == 5
-            ]
+        # Ajouter les ennemis dans la portée d'attaque
+        for opponent in opponents:
+            if (opponent.x, opponent.y) in attack_range and self.is_line_of_sight_clear(unit.x, unit.y, opponent.x, opponent.y):
+                valid_targets.append(opponent)
 
-        else:
-        # Sinon, ajouter les barricades normales pour une attaque classique
-            barricade_targets = [
-                (x, y) for x, y in attack_range
-                if 0 <= x < GRID_SIZE_X and 0 <= y < GRID_SIZE_Y and self.logical_map[y][x] == 4
-            ]
-
-        # Ajouter des barricades comme cibles valides
-        valid_targets.extend(barricade_targets)
+        # Ajouter les barricades dans la portée d'attaque
+        for x, y in attack_range:
+            if 0 <= x < GRID_SIZE_X and 0 <= y < GRID_SIZE_Y:
+                if self.logical_map[y][x] == 4:  # Barricade normale
+                    valid_targets.append((x, y))
+                elif self.logical_map[y][x] == 5 and selected_action == "special":  # Barricade blindée
+                    valid_targets.append((x, y))
 
         if not valid_targets:
-            print("Aucune cible valide dans la portée.")
+            self.textbox.add_message("Aucune cible valide dans la portée.")
             return  # Fin si aucune cible valide
 
         target_index = 0  # Index de la cible dans la liste des cibles valides
 
         while True:
-            # Afficher les cases d'attaque
+            # Afficher la portée d'attaque
             self.flip_display(
                 active_units=[unit],
                 selected_index=0,
@@ -629,10 +659,16 @@ class Game:
 
             # Dessiner un contour autour de la cible actuelle
             target = valid_targets[target_index]
+
+            if isinstance(target, tuple):  # Cible est une barricade
+                target_x, target_y = target
+            else:  # Cible est une unité
+                target_x, target_y = target.x, target.y
+
             pygame.draw.rect(
                 self.screen,
-                (0, 255, 0),  # Vert pour indiquer la cible sélectionnée
-                pygame.Rect(target[0] * CELL_SIZE, target[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE),
+                (0, 255, 0),  # Vert pour la cible sélectionnée
+                pygame.Rect(target_x * CELL_SIZE, target_y * CELL_SIZE, CELL_SIZE, CELL_SIZE),
                 3
             )
             pygame.display.update()
@@ -649,25 +685,26 @@ class Game:
                         # Changer de cible à droite
                         target_index = (target_index + 1) % len(valid_targets)
                     elif event.key == pygame.K_SPACE:
-                        # Lorsqu'une barricade est attaquée
-                        if target in barricade_targets:
-                            if selected_action == "special" and unit.role == "Thermite":
-                                print("Barricade blindée détruite par Thermite !")
-                            else:
-                                print("Barricade normale détruite !")
-                            self.logical_map[target[1]][target[0]] = 0  # Retirer la barricade
-                            return
+                        if isinstance(target, tuple):  # Cible est une barricade
+                            if selected_action == "special" and unit.role == "Thermite" and self.logical_map[target_y][target_x] == 5:
+                                message = f"{unit.role} a détruit une barricade blindée !"
+                                self.textbox.add_message(message)
+                            elif self.logical_map[target_y][target_x] == 4:
+                                message = f"{unit.role} a détruit une barricade normale !"
+                                self.textbox.add_message(message)
+                            self.logical_map[target_y][target_x] = 0  # Retirer la barricade
+                        else:  # Cible est une unité
+                            damage = unit.attack_power
+                            target.health = max(0, target.health - damage)
+                            message = f"{unit.role} attaque {target.role} et inflige {damage} dégâts !"
+                            self.textbox.add_message(message)
+                            if target.health <= 0:
+                                message = f"{target.role} a été éliminé !"
+                                self.textbox.add_message(message)
+                                opponents.remove(target)
+                        return  # Fin de l'attaque
 
 
-                         # Infliger des dégâts à la cible (ennemi)
-                        for opponent in opponents:
-                            if (opponent.x, opponent.y) == target:
-                                opponent.health = max(0, opponent.health - unit.attack_power)
-                                print(f"{unit.role} attaque {opponent.role} et inflige {unit.attack_power} dégâts !")
-                                if opponent.health <= 0:
-                                    print(f"{opponent.role} a été éliminé !")
-                                    opponents.remove(opponent)
-                                return  # Fin de l'attaque
 
 
     # Ajout des modifications pour gérer correctement selected_action dans tous les appels
@@ -810,7 +847,9 @@ class Game:
                         has_acted = True
 
     def flip_display(self, pause_button=None, active_units=None, selected_index=None, color=None, movement_range=None, attack_range=None, card=None, selected_action="attack"):
-        """Affiche l'état actuel de la grille et de l'interface."""
+        """
+        Affiche l'état actuel de la grille et de l'interface.
+        """
         # Dessiner la carte de fond
         self.screen.blit(MAP, (0, 0))
 
@@ -818,17 +857,7 @@ class Game:
         for x in range(0, WIDTH, CELL_SIZE):
             for y in range(0, HEIGHT, CELL_SIZE):
                 rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
-                pygame.draw.rect(self.screen, WHITE, rect, 1)
-
-        # Dessiner les obstacles
-        for y, row in enumerate(self.logical_map):
-            for x, cell in enumerate(row):
-                if cell == 1:  # Cellule infranchissable
-                    # Créer une surface semi-transparente
-                    transparent_surface = pygame.Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)
-                    transparent_surface.fill((100, 100, 100, 128))  # Gris avec transparence (128/255)
-                    # Dessiner la surface sur l'écran
-                    self.screen.blit(transparent_surface, (x * CELL_SIZE, y * CELL_SIZE))
+                pygame.draw.rect(self.screen, BLACK, rect, 1)
 
         # Dessiner les zones accessibles pour le mouvement (jaune transparent)
         if movement_range and selected_action == "move":
@@ -849,7 +878,6 @@ class Game:
         for unit in self.player_units + self.enemy_units:
             unit.draw(self.screen)
 
-
         # Dessiner l'otage
         self.hostage.draw(self.screen)
 
@@ -864,7 +892,6 @@ class Game:
             )
             pygame.draw.rect(self.screen, (255, 255, 0), rect, 3)  # Contour jaune pour l'unité sélectionnée
 
-        
         # Gérer le bouton de pause
         if pause_button is not None:
             pause_button.changeColor(pygame.mouse.get_pos())
@@ -873,41 +900,46 @@ class Game:
         # Dessiner les barricades
         for y, row in enumerate(self.logical_map):
             for x, cell in enumerate(row):
-                if cell == 4:  # 4 = Barricade
+                if cell == 4:  # Barricade normale
                     pygame.draw.rect(self.screen, (139, 69, 19),  # Marron
-                             (x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
-
-        # Dessiner les barricades blindées
-        for y, row in enumerate(self.logical_map):
-            for x, cell in enumerate(row):
-                if cell == 5:  # 5 = Barricade blindée
+                                    (x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+                elif cell == 5:  # Barricade blindée
                     pygame.draw.rect(self.screen, (50, 50, 50),  # Gris foncé
-                            (x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+                                    (x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
 
-
-        # Dessiner la carte
+        # Dessiner la carte (Card)
         if card:
-            card.draw(50, HEIGHT - 250)  # Garder la carte visible
-
+            card.draw(50, HEIGHT - 250)  # Position de la carte
+            # Dessiner la boîte de texte
+            self.textbox.draw()  # Utilise la position définie dans l'initialisation
 
         # Rafraîchir l'affichage
         pygame.display.flip()
 
+
     def display_winner(self, winner):
-        #musique
+        # Arrêter les musiques en cours
+        normal_music.stop()
+        muffled_music.stop()
+
+        # Lancer la musique de victoire
         pygame.mixer.init()
         pygame.mixer.music.load("assets/Victory.mp3")
-        pygame.mixer.music.play(loops=-1,start=0.0)
-        """Affiche le message du gagnant et termine le jeu."""
+        pygame.mixer.music.play(loops=-1, start=0.0)
+
+        # Charger l'image de victoire
+        victory_image = pygame.image.load("assets/Victory.jpg")
+        victory_image = pygame.transform.scale(victory_image, (WIDTH, HEIGHT))
+
+        # Affiche l'écran de victoire
+        self.screen.blit(victory_image, (0, 0))
+
+        # Afficher le texte du gagnant
         font = get_font(60)
         message = font.render(f"Team {winner} wins!", True, WHITE)
         message_rect = message.get_rect(center=(WIDTH // 2, HEIGHT // 2))
-
-        # Fond noir
-        Victory = pygame.image.load("assets/Victory.jpg")
-        Victory = pygame.transform.scale(MAP, (WIDTH, HEIGHT))
-        self.screen.blit(Victory, (0, 0))
         self.screen.blit(message, message_rect)
+
         pygame.display.flip()
 
         # Pause pour que le joueur puisse lire le message
@@ -919,11 +951,16 @@ class Game:
 
 
 
+
 def play():
     """Lance le jeu."""
-    pygame.mixer.init()
-    pygame.mixer.music.load("assets/Metroid - Kraids Lair (Analog Synth remake).mp3")
-    pygame.mixer.music.play(loops=-1, start=0.0)
+     # Arrêter la musique du menu principal
+    pygame.mixer.music.stop()
+    # Lancer les deux musiques simultanément en boucle infinie
+    normal_music.play(loops=-1)
+    muffled_music.play(loops=-1)
+
+    toggle_music_volume(pause=False)  # Assurez-vous que la musique normale est active
     screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
     game = Game(screen)
 
@@ -936,6 +973,7 @@ def play():
     while True:
         game.handle_turn(game.player_units, game.enemy_units, pause_button, attacker_color)
         game.handle_turn(game.enemy_units, game.player_units, pause_button, defender_color)
+
 
 
 # Lancement

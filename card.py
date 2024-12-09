@@ -11,6 +11,7 @@ class Card:
         self.selected_action = "attack"  # Action par défaut
         self.attack_range = None  # Plage d'attaque
 
+
     def get_role(self):
         """
         Retourne uniquement le rôle de l'unité, extrait de 'Doc (Medic)'.
@@ -48,6 +49,9 @@ class Card:
         # Dessiner le fond de la carte
         card_rect = pygame.Rect(x, y, self.width, self.height)
         pygame.draw.rect(self.screen, self.background_color, card_rect)
+        
+        # Dessiner la bordure blanche
+        pygame.draw.rect(self.screen, (255, 255, 255), card_rect, 3)  # Bordure blanche de 3 pixels
 
         # Dessiner l'image de l'unité
         unit_image = pygame.transform.scale(self.unit.image, (120, 120))  # Image agrandie
@@ -93,10 +97,10 @@ class Card:
 
         # Calcul des positions des boutons
         button_positions = [
-            (x + 20, y + 220),  # Bouton Attack
-            (x + 20 + button_width + button_spacing, y + 220),  # Bouton Move
-            (x + 20 + 2 * (button_width + button_spacing), y + 220),  # Bouton Special
-            (x + 20 + 3 * (button_width + button_spacing), y + 220)   # Bouton Back
+            (x + 20, y + 200),  # Bouton Attack
+            (x + 20 + button_width + button_spacing, y + 200),  # Bouton Move
+            (x + 20 + 2 * (button_width + button_spacing), y + 200),  # Bouton Special
+            (x + 20 + 3 * (button_width + button_spacing), y + 200)   # Bouton Back
         ]
 
         # Créer les rectangles pour les boutons
