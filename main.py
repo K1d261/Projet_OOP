@@ -1,5 +1,6 @@
 import pygame
 import sys
+from scipy.ndimage import zoom
 from unit import Unit, Hostage
 from game_button import Button
 from card import Card
@@ -209,6 +210,27 @@ def rules():
 
         pygame.display.update()
 
+def adapt_logical_map(logical_map, grid_width, grid_height):
+    """
+    Adapte une carte logique à la nouvelle taille basée sur les dimensions de la grille.
+    
+    :param logical_map: Liste 2D représentant la carte logique originale.
+    :param grid_width: Largeur de la nouvelle grille.
+    :param grid_height: Hauteur de la nouvelle grille.
+    :return: Nouvelle carte logique adaptée.
+    """
+    original_height = len(logical_map)
+    original_width = len(logical_map[0]) if original_height > 0 else 0
+
+    # Calculer les facteurs d'échelle
+    scale_y = grid_height / original_height
+    scale_x = grid_width / original_width
+
+    # Redimensionner la carte avec interpolation
+    resized_map = zoom(logical_map, (scale_y, scale_x), order=0)  # Ne pas lisser les valeurs (0 = nearest neighbor)
+    return resized_map.astype(int).tolist()
+
+
 
 class Game:
     """Classe pour gérer le jeu."""
@@ -217,18 +239,24 @@ class Game:
         self.screen = screen
 
         # Initialiser une carte logique avec des cases traversables (0) ou bloquées (1).
-        
-        self.logical_map = [
+        # Taille des cellules
+        self.cell_size = CELL_SIZE
+
+        # Calculer les dimensions de la grille en fonction de l'écran
+        self.grid_size_x = WIDTH // self.cell_size
+        self.grid_size_y = HEIGHT // self.cell_size
+
+        original_map = [
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 0
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 1
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 2
         [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0],  # Ligne 3
         [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0],  # Ligne 4
-        [0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 5
-        [0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 6
-        [0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 7
-        [0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 8
-        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 9
+        [0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 5
+        [0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 6
+        [0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 7
+        [0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 8
+        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 9
         [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 10
         [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 11
         [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 12
@@ -251,8 +279,8 @@ class Game:
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]  # Ligne 29
         ]
 
-        
-
+        # Adapter la carte logique à la taille de l'écran
+        self.logical_map = adapt_logical_map(original_map, self.grid_size_x, self.grid_size_y)
 
         # Créer les unités personnalisées
         self.player_units = [
@@ -273,6 +301,11 @@ class Game:
         # Placer l'otage dans son lit de la grille
         self.hostage = Hostage(GRID_SIZE_X // 2 + 6, GRID_SIZE_Y // 2 +2, r"assets/Hostage.png")
    
+
+        # Ajuster les positions des unités et de l'otage en fonction de la nouvelle carte
+        self.update_unit_positions()
+
+        
         self.update_logical_map()
 
          # Appeler la phase de placement initial
@@ -284,15 +317,15 @@ class Game:
         message = font.render("Player 2: place your defendants!", True, WHITE)
         message_rect = message.get_rect(center=(WIDTH // 2, 50))
 
-        # Création du bouton pause
+    # Création du bouton pause
         pause_button = Button(pygame.image.load("assets/Pause Rect.png"), (WIDTH - 150, 50),
-                            "PAUSE", get_font(20), "#d7fcd4", "Yellow")
+                          "PAUSE", get_font(20), "#d7fcd4", "Yellow")
 
         units_to_place = self.enemy_units.copy()
         placed_units = []
 
         while units_to_place:
-            # Afficher le message et la grille
+        # Afficher le message et la grille
             self.screen.blit(MAP, (0, 0))
             self.screen.blit(message, message_rect)
 
@@ -301,7 +334,7 @@ class Game:
                     rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
                     pygame.draw.rect(self.screen, BLACK, rect, 1)
 
-            # Dessiner les unités déjà placées
+        # Dessiner les unités déjà placées
             for unit in placed_units:
                 unit.draw(self.screen)
 
@@ -324,7 +357,7 @@ class Game:
                         pause_menu()
                         continue
 
-                    # Placement des unités
+                # Placement des unités
                     grid_x = mouse_x // CELL_SIZE
                     grid_y = mouse_y // CELL_SIZE
 
@@ -340,7 +373,106 @@ class Game:
                         placed_units.append(unit)
                         self.logical_map[grid_y][grid_x] = 2  # Marquer la cellule comme occupée
 
-        # Mise à jour de la carte logique après placement
+    # Mise à jour de la carte logique après placement
+        self.update_logical_map()
+
+    # Liste des barricades placées
+        barricades = []
+        barricade_limit = 5  # Limite de barricades
+        armored_barricade_limit = 3  # Limite de barricades blindées
+
+        # Phase de placement des barricades
+        placing_normals = True
+        placing_armored = False
+
+
+        # Ajouter un message pour indiquer que le joueur peut placer des barricades
+        barricade_message = font.render(
+            f"Player 2: Place barricades normales ({barricade_limit} remaining) et blindées ({armored_barricade_limit} remaining)", 
+            True, WHITE
+        )   
+        barricade_message_rect = barricade_message.get_rect(center=(WIDTH // 2, 100))
+
+        while placing_normals or placing_armored:
+            # Afficher le message et la grille
+            self.screen.blit(MAP, (0, 0))
+            self.screen.blit(barricade_message, barricade_message_rect)
+
+            for x in range(0, WIDTH, CELL_SIZE):
+                for y in range(0, HEIGHT, CELL_SIZE):
+                    rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
+                    pygame.draw.rect(self.screen, BLACK, rect, 1)
+
+            # Dessiner les unités déjà placées
+            for unit in placed_units:
+                unit.draw(self.screen)
+
+            # Dessiner les barricades
+            for barricade in barricades:
+                if barricade["type"] == "normal":
+                    pygame.draw.rect(self.screen, (139, 69, 19),  # Marron
+                            (barricade["x"] * CELL_SIZE, barricade["y"] * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+                elif barricade["type"] == "armored":
+                    pygame.draw.rect(self.screen, (50, 50, 50),  # Gris foncé
+                            (barricade["x"] * CELL_SIZE, barricade["y"] * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+
+            # Dessiner le bouton pause
+            pause_button.changeColor(pygame.mouse.get_pos())
+            pause_button.update(self.screen)
+
+            pygame.display.flip()
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_x, mouse_y = pygame.mouse.get_pos()
+                    grid_x = mouse_x // CELL_SIZE
+                    grid_y = mouse_y // CELL_SIZE
+                    # Gestion du bouton pause
+                    if pause_button.checkForInput((mouse_x, mouse_y)):
+                        pause_menu()
+                        continue
+
+                        # Placement des barricades normales
+                    if placing_normals and barricade_limit > 0:
+                        if (
+                            0 <= grid_x < len(self.logical_map[0])
+                            and 0 <= grid_y < len(self.logical_map)
+                            and self.logical_map[grid_y][grid_x] == 0  # Cellule vide
+                        ):
+                            barricades.append({"x": grid_x, "y": grid_y, "type": "normal"})
+                            self.logical_map[grid_y][grid_x] = 4  # Barricade normale
+                            barricade_limit -= 1
+                            barricade_message = font.render(
+                                f"Player 2: Place normal barricades ({barricade_limit} remaining)", True, WHITE
+                            )
+                            if barricade_limit == 0:  # Passer aux barricades blindées
+                                placing_normals = False
+                                placing_armored = True
+                                barricade_message = font.render(
+                                    f"Player 2: Place armored barricades ({armored_barricade_limit} remaining)", True, WHITE
+                                )
+
+                    # Placement des barricades blindées
+                    elif placing_armored and armored_barricade_limit > 0:
+                        if (
+                            0 <= grid_x < len(self.logical_map[0])
+                            and 0 <= grid_y < len(self.logical_map)
+                            and self.logical_map[grid_y][grid_x] == 0  # Cellule vide
+                        ):
+                            barricades.append({"x": grid_x, "y": grid_y, "type": "armored"})
+                            self.logical_map[grid_y][grid_x] = 5  # Barricade blindée
+                            armored_barricade_limit -= 1
+                            barricade_message = font.render(
+                                f"Player 2: Place armored barricades ({armored_barricade_limit} remaining)", True, WHITE
+                            )
+                            if armored_barricade_limit == 0:  # Fin du placement
+                                placing_armored = False
+
+        # Mise à jour de la carte logique après placement des barricades
         self.update_logical_map()
 
     def update_logical_map(self):
@@ -359,6 +491,26 @@ class Game:
         # Ajouter l'otage
         if 0 <= self.hostage.y < len(self.logical_map) and 0 <= self.hostage.x < len(self.logical_map[self.hostage.y]):
             self.logical_map[self.hostage.y][self.hostage.x] = 3  # 3 = Otage
+
+        # **Gestion des barricades blindées déjà existantes dans la carte logique**
+        for y, row in enumerate(self.logical_map):
+            for x, cell in enumerate(row):
+                if cell == 5:  # Si une barricade blindée est détectée
+                    self.logical_map[y][x] = 5  # Maintenir le type de barricade blindée
+
+    def update_unit_positions(self):
+        original_width = len(self.logical_map[0])
+        original_height = len(self.logical_map)
+
+        for unit in self.player_units + self.enemy_units:
+            unit.x = int(unit.x * self.grid_size_x / original_width)
+            unit.y = int(unit.y * self.grid_size_y / original_height)
+
+        # Ajuster la position de l'otage
+        self.hostage.x = int(self.hostage.x * self.grid_size_x / original_width)
+        self.hostage.y = int(self.hostage.y * self.grid_size_y / original_height)
+
+
 
     def get_attack_range(self, unit):
         """
@@ -431,7 +583,7 @@ class Game:
 
     
 
-    def handle_attack(self, unit, opponents):
+    def handle_attack(self, unit, opponents, selected_action="attack"):
         """Gère l'attaque d'une unité en ciblant uniquement les ennemis dans la portée."""
         attack_range = self.get_attack_range(unit)  # Obtenir la portée d'attaque
         valid_targets = [
@@ -439,6 +591,25 @@ class Game:
             if (opponent.x, opponent.y) in attack_range
             and self.is_line_of_sight_clear(unit.x, unit.y, opponent.x, opponent.y)  # Vérifie la ligne de vue
         ]
+
+        # Vérifier si une barricade est dans la portée d'attaque
+        barricade_targets = []
+        if selected_action == "special" and unit.role == "Thermite":
+            # Ajout des barricades blindées uniquement pour l'action spéciale
+            barricade_targets = [
+                (x, y) for x, y in attack_range
+                if 0 <= x < GRID_SIZE_X and 0 <= y < GRID_SIZE_Y and self.logical_map[y][x] == 5
+            ]
+
+        else:
+        # Sinon, ajouter les barricades normales pour une attaque classique
+            barricade_targets = [
+                (x, y) for x, y in attack_range
+                if 0 <= x < GRID_SIZE_X and 0 <= y < GRID_SIZE_Y and self.logical_map[y][x] == 4
+            ]
+
+        # Ajouter des barricades comme cibles valides
+        valid_targets.extend(barricade_targets)
 
         if not valid_targets:
             print("Aucune cible valide dans la portée.")
@@ -453,7 +624,7 @@ class Game:
                 selected_index=0,
                 color=(255, 0, 0),  # Rouge pour la portée d'attaque
                 attack_range=attack_range,
-                selected_action="attack"
+                selected_action=selected_action
             )
 
             # Dessiner un contour autour de la cible actuelle
@@ -461,7 +632,7 @@ class Game:
             pygame.draw.rect(
                 self.screen,
                 (0, 255, 0),  # Vert pour indiquer la cible sélectionnée
-                pygame.Rect(target.x * CELL_SIZE, target.y * CELL_SIZE, CELL_SIZE, CELL_SIZE),
+                pygame.Rect(target[0] * CELL_SIZE, target[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE),
                 3
             )
             pygame.display.update()
@@ -478,13 +649,25 @@ class Game:
                         # Changer de cible à droite
                         target_index = (target_index + 1) % len(valid_targets)
                     elif event.key == pygame.K_SPACE:
-                        # Infliger des dégâts à la cible
-                        target.health = max(0, target.health - unit.attack_power)
-                        print(f"{unit.role} attaque {target.role} et inflige {unit.attack_power} dégâts !")
-                        if target.health <= 0:
-                            print(f"{target.role} a été éliminé !")
-                            opponents.remove(target)
-                        return  # Fin de l'attaque
+                        # Lorsqu'une barricade est attaquée
+                        if target in barricade_targets:
+                            if selected_action == "special" and unit.role == "Thermite":
+                                print("Barricade blindée détruite par Thermite !")
+                            else:
+                                print("Barricade normale détruite !")
+                            self.logical_map[target[1]][target[0]] = 0  # Retirer la barricade
+                            return
+
+
+                         # Infliger des dégâts à la cible (ennemi)
+                        for opponent in opponents:
+                            if (opponent.x, opponent.y) == target:
+                                opponent.health = max(0, opponent.health - unit.attack_power)
+                                print(f"{unit.role} attaque {opponent.role} et inflige {unit.attack_power} dégâts !")
+                                if opponent.health <= 0:
+                                    print(f"{opponent.role} a été éliminé !")
+                                    opponents.remove(opponent)
+                                return  # Fin de l'attaque
 
 
     # Ajout des modifications pour gérer correctement selected_action dans tous les appels
@@ -557,7 +740,7 @@ class Game:
                 if event.type == pygame.KEYDOWN:
                     if not has_selected_unit:
                         if event.key == pygame.K_LEFT:
-                            selected_index = (selected_index) % len(active_units)
+                            selected_index = (selected_index-1) % len(active_units)
                             selected_unit = active_units[selected_index]
                             card.update(unit=selected_unit)
                         elif event.key == pygame.K_RIGHT:
@@ -580,7 +763,10 @@ class Game:
                                 self.handle_attack(selected_unit, opponents)
                                 action_completed = True
                             elif actions[action_index] == "special":
-                                print("Mode spécial non implémenté.")
+                                if selected_unit.role == "Thermite":
+                                    self.handle_attack(selected_unit, opponents, selected_action="special")
+                                else:
+                                    print(f"L'unité {selected_unit.role} n'a pas de capacité spéciale utilisable.")
                                 action_completed = True
                             elif actions[action_index] == "back":
                                 has_selected_unit = False
@@ -663,6 +849,7 @@ class Game:
         for unit in self.player_units + self.enemy_units:
             unit.draw(self.screen)
 
+
         # Dessiner l'otage
         self.hostage.draw(self.screen)
 
@@ -677,14 +864,31 @@ class Game:
             )
             pygame.draw.rect(self.screen, (255, 255, 0), rect, 3)  # Contour jaune pour l'unité sélectionnée
 
-        # Dessiner la carte
-        if card:
-            card.draw(50, HEIGHT - 250)  # Garder la carte visible
-
+        
         # Gérer le bouton de pause
         if pause_button is not None:
             pause_button.changeColor(pygame.mouse.get_pos())
             pause_button.update(self.screen)
+
+        # Dessiner les barricades
+        for y, row in enumerate(self.logical_map):
+            for x, cell in enumerate(row):
+                if cell == 4:  # 4 = Barricade
+                    pygame.draw.rect(self.screen, (139, 69, 19),  # Marron
+                             (x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+
+        # Dessiner les barricades blindées
+        for y, row in enumerate(self.logical_map):
+            for x, cell in enumerate(row):
+                if cell == 5:  # 5 = Barricade blindée
+                    pygame.draw.rect(self.screen, (50, 50, 50),  # Gris foncé
+                            (x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+
+
+        # Dessiner la carte
+        if card:
+            card.draw(50, HEIGHT - 250)  # Garder la carte visible
+
 
         # Rafraîchir l'affichage
         pygame.display.flip()
