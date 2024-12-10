@@ -25,4 +25,4 @@ class Caveira(Unit):
         # Effet de zone sur toute l'équipe adverse
         for enemy in enemy_team:
             if isinstance(enemy, Unit):
-                enemy.health = max(0, enemy.health - 10)
+                enemy.health = max(0, enemy.health - 5)

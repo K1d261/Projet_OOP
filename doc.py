@@ -7,4 +7,4 @@ class Doc(Unit):
     def special_ability(self, ally):
         """Soigne une unité alliée."""
         if ally.team == self.team:  # Vérifie que l'unité est une alliée
-            ally.health = min(ally.max_health, ally.health + 30)  # Limite à la santé max
+            ally.health = min(ally.max_health, ally.health + 20)  # Limite à la santé max

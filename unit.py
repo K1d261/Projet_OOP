@@ -76,7 +76,13 @@ class Unit:
         # Rectangle pour la barre de vie
         pygame.draw.rect(screen, (255, 0, 0), (bar_x, bar_y, bar_width, bar_height))  # Barre rouge (fond)
         pygame.draw.rect(screen, (0, 255, 0), (bar_x, bar_y, bar_width * health_ratio, bar_height))  # Barre verte
-
+    def take_damage(self, amount):
+        """
+        Réduit les points de vie de l'unité et retourne True si elle est éliminée.
+        """
+        self.health = max(0, self.health - amount)
+        print(f"{self.role} a subi {amount} dégâts. Santé restante : {self.health}")
+        return self.health <= 0
 
 class Hostage:
     """
