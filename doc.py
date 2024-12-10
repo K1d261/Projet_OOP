@@ -2,9 +2,34 @@ from unit import Unit
 
 class Doc(Unit):
     def __init__(self, x, y):
-        super().__init__(x, y, health=120, attack_power=20, defense=75, speed=2, team='player', role='Doc (Medic)', image_path='assets/images/doc.png')
+        super().__init__(
+            x, y,
+            health=120,
+            attack_power=20,
+            defense=75,
+            speed=2,
+            team='player',
+            role='Doc (Medic)',
+            image_path='assets/images/doc.png'
+        )
+        self.damaged_units = []  # Pour suivre les unités soignées
 
-    def special_ability(self, ally):
-        """Soigne une unité alliée."""
-        if ally.team == self.team:  # Vérifie que l'unité est une alliée
-            ally.health = min(ally.max_health, ally.health + 20)  # Limite à la santé max
+    def special_ability(self, game_map, target_unit):
+        """
+        Doc soigne une unité alliée, augmentant sa santé jusqu'à un maximum.
+
+        :param game_map: La carte logique actuelle (2D array).
+        :param target_unit: L'unité alliée à soigner.
+        :return: Tuple (affected_cells, eliminated_units)
+        """
+        affected_cells = [(target_unit.x, target_unit.y)]  # Cible soignée
+        eliminated_units = []  # Pas d'unités éliminées pour cette capacité
+        self.damaged_units = []  # Réinitialiser la liste des unités soignées
+
+        # Vérifie si la cible est une unité alliée
+        if target_unit.team == self.team:
+            target_unit.health = min(target_unit.max_health, target_unit.health + 20)
+            self.damaged_units.append(target_unit)
+            print(f"Doc soigne {target_unit.role}, santé actuelle : {target_unit.health}")
+
+        return affected_cells, eliminated_units
