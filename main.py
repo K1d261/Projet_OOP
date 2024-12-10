@@ -1033,10 +1033,6 @@ class Game:
         # Retour au menu principal
         main_menu()
 
-
-
-
-
 def play():
     """Lance le jeu."""
      # Arrêter la musique du menu principal
