@@ -591,11 +591,10 @@ class Game:
             x = round(x1 + step * x_step)
             y = round(y1 + step * y_step)
 
-            # Si une cellule est un mur ou hors limite
-            if not (0 <= x < GRID_SIZE_X and 0 <= y < GRID_SIZE_Y) or self.logical_map[y][x] == 1:
+            # Si une cellule est un mur ou une barricade, ou hors limite
+            if not (0 <= x < GRID_SIZE_X and 0 <= y < GRID_SIZE_Y) or self.logical_map[y][x] in [1, 4, 5]:
                 return False
         return True
-
 
 
 
@@ -617,7 +616,7 @@ class Game:
             # Vérifie les voisins
             for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                 nx, ny = x + dx, y + dy
-                if 0 <= nx < GRID_SIZE_X and 0 <= ny < GRID_SIZE_Y and self.logical_map[ny][nx] != 1:
+                if 0 <= nx < GRID_SIZE_X and 0 <= ny < GRID_SIZE_Y and self.logical_map[ny][nx] not in [1, 4, 5]:
                     queue.append((nx, ny, dist + 1))
 
         return movement_range
@@ -711,78 +710,170 @@ class Game:
 
     def handle_special_attack(self, unit, opponents, special_action_range):
         """
-        Gère les attaques spéciales d'une unité, permettant de naviguer et d'appliquer les dégâts.
+        Gère les attaques spéciales des unités en fonction de leur rôle.
+
+        :param unit: L'unité active utilisant l'attaque spéciale.
+        :param opponents: Liste des unités ennemies.
+        :param special_action_range: Liste des cellules dans la portée spéciale.
         """
         if not special_action_range:
             self.textbox.add_message("Aucune position valide pour l'attaque spéciale.")
             return
 
-        selected_position = special_action_range[0]
+        if unit.role in ["Doc (Medic)", "Caveira (Medic)"]:
+            # Trouver les alliés blessés
+            valid_targets = [
+                ally for ally in self.player_units + self.enemy_units
+                if ally.team == unit.team and ally.health < ally.max_health and (ally.x, ally.y) in special_action_range
+            ]
+            if not valid_targets:
+                self.textbox.add_message("Aucun allié blessé à portée.")
+                return
 
-        while True:
-            # Affichage de la portée d'attaque spéciale
-            self.flip_display(
-                active_units=[unit],
-                selected_index=0,
-                color=(0, 255, 0),  # Vert pour la portée spéciale
-                attack_range=special_action_range,
-                selected_action="special"
-            )
+            target_index = 0  # Index de la cible initiale
+            while True:
+                # Afficher la cible actuelle
+                self.flip_display(
+                    active_units=[unit],
+                    selected_index=0,
+                    color=(0, 255, 0),  # Vert pour la portée spéciale
+                    attack_range=special_action_range,
+                    selected_action="special"
+                )
+                # Dessiner un contour autour de l'unité cible
+                target = valid_targets[target_index]
+                pygame.draw.rect(
+                    self.screen,
+                    (0, 255, 0),  # Vert pour la cible sélectionnée
+                    pygame.Rect(target.x * CELL_SIZE, target.y * CELL_SIZE, CELL_SIZE, CELL_SIZE),
+                    3
+                )
+                pygame.display.update()
 
-            # Dessiner un contour autour de la position sélectionnée
-            pygame.draw.rect(
-                self.screen,
-                (0, 255, 0),  # Vert pour la sélection actuelle
-                pygame.Rect(selected_position[0] * CELL_SIZE, selected_position[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE),
-                3
-            )
-            pygame.display.update()
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_LEFT:
+                            target_index = (target_index - 1) % len(valid_targets)
+                        elif event.key == pygame.K_RIGHT:
+                            target_index = (target_index + 1) % len(valid_targets)
+                        elif event.key == pygame.K_SPACE:
+                            # Soigner l'unité cible
+                            affected_cells, _ = unit.special_ability(self.logical_map, target)
+                            self.textbox.add_message(f"{unit.role} a soigné {target.role}.")
+                            return
 
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-                if event.type == pygame.KEYDOWN:
-                    new_position = None
-                    if event.key == pygame.K_LEFT:
-                        new_position = (selected_position[0] - 1, selected_position[1])
-                    elif event.key == pygame.K_RIGHT:
-                        new_position = (selected_position[0] + 1, selected_position[1])
-                    elif event.key == pygame.K_UP:
-                        new_position = (selected_position[0], selected_position[1] - 1)
-                    elif event.key == pygame.K_DOWN:
-                        new_position = (selected_position[0], selected_position[1] + 1)
-                    elif event.key == pygame.K_SPACE:
-                        # Déclenche l'attaque spéciale
-                        affected_cells, eliminated_units = unit.special_ability(
-                            self.logical_map, selected_position[0], selected_position[1]
-                        )
+        elif unit.role in ["Thermite (Demolitionist)", "Jackal (Demolitionist)"]:
+            # Trouver les barricades blindées à portée
+            valid_targets = [
+                (x, y) for x, y in special_action_range
+                if self.logical_map[y][x] == 5  # Barricade blindée
+            ]
+            if not valid_targets:
+                self.textbox.add_message("Aucune barricade blindée à portée.")
+                return
 
-                        # Supprimer les unités éliminées et afficher les messages
-                        for eliminated_unit in eliminated_units:
-                            self.textbox.add_message(f"{eliminated_unit.role} a été éliminé !")
-                            if eliminated_unit in opponents:
-                                opponents.remove(eliminated_unit)
-                        for damaged_unit in unit.damaged_units:
-                            if damaged_unit.health > 0:
-                                self.textbox.add_message(
-                                    f"{damaged_unit.role} a subi {unit.attack_power} dégâts !"
-                                )
+            target_index = 0  # Index de la cible initiale
+            while True:
+                # Afficher la cible actuelle
+                self.flip_display(
+                    active_units=[unit],
+                    selected_index=0,
+                    color=(0, 255, 0),  # Vert pour la portée spéciale
+                    attack_range=special_action_range,
+                    selected_action="special"
+                )
+                # Dessiner un contour autour de la barricade cible
+                target_x, target_y = valid_targets[target_index]
+                pygame.draw.rect(
+                    self.screen,
+                    (0, 255, 0),  # Vert pour la cible sélectionnée
+                    pygame.Rect(target_x * CELL_SIZE, target_y * CELL_SIZE, CELL_SIZE, CELL_SIZE),
+                    3
+                )
+                pygame.display.update()
 
-                        # **Affichage stabilisé des zones affectées**
-                        for x, y in affected_cells:
-                            vert_clair = pygame.Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)
-                            vert_clair.fill((255, 0, 0, 128))  # Rouge transparent pour représenter l'effet
-                            self.screen.blit(vert_clair, (x * CELL_SIZE, y * CELL_SIZE))
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_LEFT:
+                            target_index = (target_index - 1) % len(valid_targets)
+                        elif event.key == pygame.K_RIGHT:
+                            target_index = (target_index + 1) % len(valid_targets)
+                        elif event.key == pygame.K_SPACE:
+                            # Détruire la barricade
+                            self.logical_map[target_y][target_x] = 0
+                            self.textbox.add_message(f"{unit.role} a détruit une barricade blindée.")
+                            return
 
-                        pygame.display.update()
-                        pygame.time.wait(1000)  # Pause pour visualiser l'effet
-                        self.textbox.add_message(f"{unit.role} a utilisé son attaque spéciale à {selected_position} !")
-                        return
+        elif unit.role in ["Fuze (Bomber)", "Kapkan (Bomber)"]:
+            # Ciblage libre pour les attaques de zone
+            selected_position = special_action_range[0]
+            while True:
+                # Affichage de la portée d'attaque spéciale
+                self.flip_display(
+                    active_units=[unit],
+                    selected_index=0,
+                    color=(0, 255, 0),  # Vert pour la portée spéciale
+                    attack_range=special_action_range,
+                    selected_action="special"
+                )
+                # Dessiner un contour autour de la position sélectionnée
+                pygame.draw.rect(
+                    self.screen,
+                    (0, 255, 0),  # Vert pour la sélection actuelle
+                    pygame.Rect(selected_position[0] * CELL_SIZE, selected_position[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE),
+                    3
+                )
+                pygame.display.update()
 
-                    # Vérifier que la nouvelle position est valide
-                    if new_position in special_action_range:
-                        selected_position = new_position
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+                    if event.type == pygame.KEYDOWN:
+                        new_position = None
+                        if event.key == pygame.K_LEFT:
+                            new_position = (selected_position[0] - 1, selected_position[1])
+                        elif event.key == pygame.K_RIGHT:
+                            new_position = (selected_position[0] + 1, selected_position[1])
+                        elif event.key == pygame.K_UP:
+                            new_position = (selected_position[0], selected_position[1] - 1)
+                        elif event.key == pygame.K_DOWN:
+                            new_position = (selected_position[0], selected_position[1] + 1)
+                        elif event.key == pygame.K_SPACE:
+                            # Infliger des dégâts dans la zone
+                            affected_cells, eliminated_units = unit.special_ability(
+                                self.logical_map, selected_position[0], selected_position[1]
+                            )
+                            for cell in affected_cells:
+                                x, y = cell
+                                rouge_clair = pygame.Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)
+                                rouge_clair.fill((255, 0, 0, 128))  # Rouge transparent
+                                self.screen.blit(rouge_clair, (x * CELL_SIZE, y * CELL_SIZE))
+
+                            pygame.display.update()
+                            pygame.time.wait(1000)  # Pause pour visualiser les effets
+
+                            # Afficher les résultats des attaques
+                            for eliminated_unit in eliminated_units:
+                                self.textbox.add_message(f"{eliminated_unit.role} a été éliminé !")
+                                if eliminated_unit in opponents:
+                                    opponents.remove(eliminated_unit)
+                            self.textbox.add_message(f"{unit.role} a utilisé son attaque spéciale !")
+                            return
+
+                        # Vérifier que la nouvelle position est valide
+                        if new_position in special_action_range:
+                            selected_position = new_position
+
+
+
+
 
 
 
@@ -800,9 +891,8 @@ class Game:
         """
         selected_index = 0
         has_selected_unit = False
-        selected_action = "attack"  # Action par défaut
         actions = ["attack", "move", "special", "back"]
-        action_index = 0
+        action_index = 0  # Par défaut, l'action "attack" est sélectionnée
         movement_range = None
         attack_range = None
         action_completed = False
@@ -810,33 +900,20 @@ class Game:
         selected_unit = active_units[selected_index]
         card = Card(selected_unit, self.screen)
 
-        # Stockez la plage précédemment affichée
-        last_action = None
-
         while not action_completed:
             if has_selected_unit:
-                if actions[action_index] == "move" and selected_action != "move":
-                    if last_action != "move":
-                        movement_range = self.get_movement_range(selected_unit)
-                        attack_range = None
-                        selected_action = "move"
-                        last_action = "move"
-                elif actions[action_index] == "attack" and selected_action != "attack":
-                    if last_action != "attack":
-                        attack_range = self.get_attack_range(selected_unit)
-                        movement_range = None
-                        selected_action = "attack"
-                        last_action = "attack"
-                elif actions[action_index] == "special" and selected_action != "special":
-                    if last_action != "special":
-                        attack_range = self.get_attack_range(selected_unit)
-                        movement_range = None
-                        selected_action = "special"
-                        last_action = "special"
+                # Met à jour les plages de mouvements ou d'attaques en fonction de l'action sélectionnée
+                if actions[action_index] == "move":
+                    movement_range = self.get_movement_range(selected_unit)
+                    attack_range = None
+                elif actions[action_index] in ["attack", "special"]:
+                    attack_range = self.get_attack_range(selected_unit)
+                    movement_range = None
 
-                card.update(unit=selected_unit, selected_action=selected_action)
+                # Met à jour la carte pour refléter l'action sélectionnée
+                card.update(unit=selected_unit, selected_action=actions[action_index])
 
-            # Affiche uniquement si l'état a changé
+            # Met à jour l'affichage
             self.flip_display(
                 pause_button=pause_button,
                 active_units=active_units,
@@ -845,9 +922,10 @@ class Game:
                 movement_range=movement_range,
                 attack_range=attack_range,
                 card=card,
-                selected_action=selected_action
+                selected_action=actions[action_index] if has_selected_unit else "none"
             )
 
+            # Gère les événements
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -856,6 +934,7 @@ class Game:
                     self.handle_pause(pause_button)  # Vérifie si le bouton pause est cliqué
                 if event.type == pygame.KEYDOWN:
                     if not has_selected_unit:
+                        # Navigation entre les unités
                         if event.key == pygame.K_LEFT:
                             selected_index = (selected_index - 1) % len(active_units)
                             selected_unit = active_units[selected_index]
@@ -865,14 +944,16 @@ class Game:
                             selected_unit = active_units[selected_index]
                             card.update(unit=selected_unit)
                         elif event.key == pygame.K_SPACE:
+                            # Sélectionne une unité
                             has_selected_unit = True
-                            movement_range = self.get_movement_range(selected_unit)
                     else:
+                        # Navigation entre les actions
                         if event.key == pygame.K_LEFT:
                             action_index = (action_index - 1) % len(actions)
                         elif event.key == pygame.K_RIGHT:
                             action_index = (action_index + 1) % len(actions)
                         elif event.key == pygame.K_SPACE:
+                            # Exécute l'action sélectionnée
                             if actions[action_index] == "move":
                                 self.move_unit(selected_unit, opponents, pause_button, movement_range)
                                 action_completed = True
@@ -884,9 +965,27 @@ class Game:
                                 self.handle_special_attack(selected_unit, opponents, special_action_range)
                                 action_completed = True
                             elif actions[action_index] == "back":
+                                # Réinitialise l'action sur "attack" et met à jour visuellement
                                 has_selected_unit = False
-                                action_index = 0
+                                action_index = 0  # Forcer le retour à "attack"
                                 selected_action = "attack"
+
+                                # Force la mise à jour graphique après "back"
+                                self.flip_display(
+                                    pause_button=pause_button,
+                                    active_units=active_units,
+                                    selected_index=selected_index,
+                                    color=color,
+                                    movement_range=None,
+                                    attack_range=None,
+                                    card=card,
+                                    selected_action=selected_action  # Forcer sur "attack"
+                                )
+
+
+
+                                
+
 
 
 
