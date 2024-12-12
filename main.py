@@ -62,7 +62,7 @@ def toggle_music_volume(pause=False):
     if pause:
         # Baisser la musique normale et augmenter la musique étouffée
         normal_music.set_volume(0.0)
-        muffled_music.set_volume(2.0)
+        muffled_music.set_volume(1.0)
     else:
         # Remettre la musique normale et baisser la musique étouffée
         normal_music.set_volume(1.0)
@@ -559,7 +559,7 @@ class Game:
         Retourne une liste des cellules accessibles pour une attaque avec une portée spécifique.
         """
         attack_range = []
-        max_distance = 10  # Portée d'attaque
+        max_distance = 7  # Portée d'attaque
 
         for dx in range(-max_distance, max_distance + 1):
             for dy in range(-max_distance, max_distance + 1):
@@ -889,6 +889,13 @@ class Game:
         Gère un tour pour une équipe active, incluant la sélection de l'unité, le choix de l'action,
         le déplacement, l'attaque normale et l'attaque spéciale.
         """
+        if not active_units:
+            self.display_winner("Defenders" if active_units == self.enemy_units else "Attackers")
+            return
+        if not opponents:
+            self.display_winner("Attackers" if active_units == self.enemy_units else "Defenders")
+            return
+
         selected_index = 0
         has_selected_unit = False
         actions = ["attack", "move", "special", "back"]
@@ -902,7 +909,6 @@ class Game:
 
         while not action_completed:
             if has_selected_unit:
-                # Met à jour les plages de mouvements ou d'attaques en fonction de l'action sélectionnée
                 if actions[action_index] == "move":
                     movement_range = self.get_movement_range(selected_unit)
                     attack_range = None
@@ -910,10 +916,8 @@ class Game:
                     attack_range = self.get_attack_range(selected_unit)
                     movement_range = None
 
-                # Met à jour la carte pour refléter l'action sélectionnée
                 card.update(unit=selected_unit, selected_action=actions[action_index])
 
-            # Met à jour l'affichage
             self.flip_display(
                 pause_button=pause_button,
                 active_units=active_units,
@@ -925,16 +929,14 @@ class Game:
                 selected_action=actions[action_index] if has_selected_unit else "none"
             )
 
-            # Gère les événements
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    self.handle_pause(pause_button)  # Vérifie si le bouton pause est cliqué
+                    self.handle_pause(pause_button)
                 if event.type == pygame.KEYDOWN:
                     if not has_selected_unit:
-                        # Navigation entre les unités
                         if event.key == pygame.K_LEFT:
                             selected_index = (selected_index - 1) % len(active_units)
                             selected_unit = active_units[selected_index]
@@ -944,16 +946,13 @@ class Game:
                             selected_unit = active_units[selected_index]
                             card.update(unit=selected_unit)
                         elif event.key == pygame.K_SPACE:
-                            # Sélectionne une unité
                             has_selected_unit = True
                     else:
-                        # Navigation entre les actions
                         if event.key == pygame.K_LEFT:
                             action_index = (action_index - 1) % len(actions)
                         elif event.key == pygame.K_RIGHT:
                             action_index = (action_index + 1) % len(actions)
                         elif event.key == pygame.K_SPACE:
-                            # Exécute l'action sélectionnée
                             if actions[action_index] == "move":
                                 self.move_unit(selected_unit, opponents, pause_button, movement_range)
                                 action_completed = True
@@ -965,22 +964,9 @@ class Game:
                                 self.handle_special_attack(selected_unit, opponents, special_action_range)
                                 action_completed = True
                             elif actions[action_index] == "back":
-                                # Réinitialise l'action sur "attack" et met à jour visuellement
                                 has_selected_unit = False
-                                action_index = 0  # Forcer le retour à "attack"
-                                selected_action = "attack"
+                                action_index = 0
 
-                                # Force la mise à jour graphique après "back"
-                                self.flip_display(
-                                    pause_button=pause_button,
-                                    active_units=active_units,
-                                    selected_index=selected_index,
-                                    color=color,
-                                    movement_range=None,
-                                    attack_range=None,
-                                    card=card,
-                                    selected_action=selected_action  # Forcer sur "attack"
-                                )
 
 
 
