@@ -29,6 +29,7 @@ class Unit:
         self.speed = speed #nb de case
         self.team = team
         self.role = role
+        self.has_crown = False  # Initialisation par défaut
         self.is_selected = False
         self.image_path = image_path  # Stocke le chemin de l'image
         self.image = pygame.image.load(image_path)

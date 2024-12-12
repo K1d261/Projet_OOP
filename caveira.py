@@ -5,9 +5,9 @@ class Caveira(Unit):
         super().__init__(
             x, y,
             health=120,
-            attack_power=20,
+            attack_power=20000,
             defense=75,
-            speed=2,
+            speed=20000,
             team='enemy',
             role='Caveira (Medic)',
             image_path='assets/images/caveira.png'

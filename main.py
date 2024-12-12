@@ -17,7 +17,16 @@ from kapkan import Kapkan
 from caveira import Caveira
 pygame.init()
 
+# Lancer la musique du menu principal
+pygame.mixer.init()
+pygame.mixer.music.load("assets/chess.mp3")
+pygame.mixer.music.play(loops=-1, start=0.0)
 
+
+# Ajouter un attribut par défaut "has_crown" à toutes les unités
+def initialize_units_with_crown(units):
+    for unit in units:
+        unit.has_crown = False
 
 
 # Obtenir la taille de l'écran
@@ -111,9 +120,11 @@ def pause_menu():
                     return  # Quitter le menu pause et reprendre
                 if menu_button.checkForInput(mouse_pos):
                     # Arrêter la musique du jeu
-                    normal_music.stop()
-                    muffled_music.stop()
                     toggle_music_volume(pause=False)  # Réinitialiser les volumes
+                    # Lancer la musique du menu principal
+                    pygame.mixer.init()
+                    pygame.mixer.music.load("assets/chess.mp3")
+                    pygame.mixer.music.play(loops=-1, start=0.0)
                     main_menu()
                 if quit_button.checkForInput(mouse_pos):
                     pygame.quit()
@@ -129,11 +140,6 @@ def main_menu():
     normal_music.stop()
     muffled_music.stop()
     
-    # Lancer la musique du menu principal
-    pygame.mixer.init()
-    pygame.mixer.music.load("assets/chess.mp3")
-    pygame.mixer.music.play(loops=-1, start=0.0)
-
     """Affiche le menu principal."""
     bg_image = pygame.image.load("assets/Background.png")
     bg_image = pygame.transform.scale(bg_image, (WIDTH, HEIGHT))
@@ -295,7 +301,7 @@ class Game:
         [0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 7
         [0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 8
         [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 9
-        [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 10
+        [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 10
         [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 11
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 12
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 13
@@ -404,6 +410,8 @@ class Game:
                         0 <= grid_x < len(self.logical_map[0])
                         and 0 <= grid_y < len(self.logical_map)
                         and self.logical_map[grid_y][grid_x] == 0  # Cellule vide
+                        and not any(unit.x == grid_x and unit.y == grid_y for unit in self.player_units + self.enemy_units)
+
                     ):
                         # Placer l'unité et la retirer de la liste
                         unit = units_to_place.pop(0)
@@ -474,12 +482,13 @@ class Game:
                         pause_menu()
                         continue
 
-                        # Placement des barricades normales
+                    # Placement des barricades normales
                     if placing_normals and barricade_limit > 0:
                         if (
                             0 <= grid_x < len(self.logical_map[0])
                             and 0 <= grid_y < len(self.logical_map)
                             and self.logical_map[grid_y][grid_x] == 0  # Cellule vide
+                            and not any(unit.x == grid_x and unit.y == grid_y for unit in self.player_units + self.enemy_units)
                         ):
                             barricades.append({"x": grid_x, "y": grid_y, "type": "normal"})
                             self.logical_map[grid_y][grid_x] = 4  # Barricade normale
@@ -500,6 +509,8 @@ class Game:
                             0 <= grid_x < len(self.logical_map[0])
                             and 0 <= grid_y < len(self.logical_map)
                             and self.logical_map[grid_y][grid_x] == 0  # Cellule vide
+                            and not any(unit.x == grid_x and unit.y == grid_y for unit in self.player_units + self.enemy_units)
+
                         ):
                             barricades.append({"x": grid_x, "y": grid_y, "type": "armored"})
                             self.logical_map[grid_y][grid_x] = 5  # Barricade blindée
@@ -512,7 +523,6 @@ class Game:
 
         # Mise à jour de la carte logique après placement des barricades
         self.update_logical_map()
-
     def update_logical_map(self):
         """
         Met à jour la carte logique en fonction des positions des unités et de l'otage.
@@ -520,21 +530,21 @@ class Game:
         # Réinitialiser la carte logique
         for y in range(len(self.logical_map)):
             for x in range(len(self.logical_map[y])):
-                if isinstance(self.logical_map[y][x], Unit) or self.logical_map[y][x] in [2, 3]:
-                    self.logical_map[y][x] = 0  # Réinitialise la cellule
+                if self.logical_map[y][x] in [2, 3]:  # Retirer les marqueurs des unités
+                    self.logical_map[y][x] = 0  # Cellule vide
 
         # Ajouter les unités
         for unit in self.player_units + self.enemy_units:
             if unit.health > 0:  # Ne placer que les unités vivantes
                 if 0 <= unit.y < len(self.logical_map) and 0 <= unit.x < len(self.logical_map[unit.y]):
-                    self.logical_map[unit.y][unit.x] = unit  # Stocker l'instance de l'unité
+                    # Ne pas marquer la cellule comme occupée par une unité
+                    continue
 
         # Ajouter l'otage
-        if 0 <= self.hostage.y < len(self.logical_map) and 0 <= self.hostage.x < len(self.logical_map[self.hostage.y]):
-            self.logical_map[self.hostage.y][self.hostage.x] = self.hostage
+        if self.hostage and 0 <= self.hostage.y < len(self.logical_map) and 0 <= self.hostage.x < len(self.logical_map[self.hostage.y]):
+            self.logical_map[self.hostage.y][self.hostage.x] = 3  # Otage marqué
 
-
-        # Gestion des barricades blindées déjà existantes dans la carte logique
+        # Laisser les barricades et murs en place
         for y, row in enumerate(self.logical_map):
             for x, cell in enumerate(row):
                 if cell == 5:  # Si une barricade blindée est détectée
@@ -554,6 +564,58 @@ class Game:
 
 
 
+
+    def check_hostage_interaction(self, unit):
+        """
+        Vérifie si une unité des attaquants interagit avec l'otage.
+        :param unit: L'unité active.
+        """
+        if self.hostage is None:
+            return  # Aucun otage à vérifier
+        print(f"Checking interaction: Unit at ({unit.x}, {unit.y}), Hostage at ({self.hostage.x}, {self.hostage.y})")
+        if unit.team == "player" and (unit.x, unit.y) == (self.hostage.x, self.hostage.y):
+            print(f"Hostage captured by {unit.role}")
+            self.logical_map[self.hostage.y][self.hostage.x] = 0  # Retirer l'otage de la carte
+            self.hostage = None  # Supprimer l'objet otage
+            unit.has_crown = True  # Marquer l'unité avec la couronne
+            self.textbox.add_message(f"{unit.role} a récupéré l'otage !")
+
+
+    def check_extraction_or_death(self, unit):
+        """
+        Vérifie si l'unité avec la couronne atteint un point d'extraction ou meurt.
+        :param unit: L'unité active.
+        """
+        extraction_points = [
+        (0, 0), (0, 1), (1, 0), (1, 1),
+        (0, GRID_SIZE_Y - 2), (0, GRID_SIZE_Y - 1), (1, GRID_SIZE_Y - 2), (1, GRID_SIZE_Y - 1),
+        (GRID_SIZE_X - 2, 0), (GRID_SIZE_X - 1, 0), (GRID_SIZE_X - 2, 1), (GRID_SIZE_X - 1, 1),
+        (GRID_SIZE_X - 2, GRID_SIZE_Y - 2), (GRID_SIZE_X - 1, GRID_SIZE_Y - 2),
+        (GRID_SIZE_X - 2, GRID_SIZE_Y - 1), (GRID_SIZE_X - 1, GRID_SIZE_Y - 1)
+    ]
+
+        if unit.has_crown:
+            if (unit.x, unit.y) in extraction_points:
+                # Victoire des attaquants
+                self.display_winner("Attackers")
+            elif unit.health <= 0:
+                # Victoire des défenseurs
+                self.display_winner("Defenders")
+
+    def draw_extraction_points(self, extraction_points, color):
+        """
+        Dessine des carrés pleins sur les points d'extraction.
+        :param extraction_points: Liste des points d'extraction.
+        :param color: Couleur à utiliser pour remplir les carrés.
+        """
+        for point in extraction_points:
+            pygame.draw.rect(
+                self.screen,
+                color,
+                pygame.Rect(point[0] * CELL_SIZE, point[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+            )
+
+
     def get_attack_range(self, unit):
         """
         Retourne une liste des cellules accessibles pour une attaque avec une portée spécifique.
@@ -566,9 +628,14 @@ class Game:
                 if abs(dx) + abs(dy) <= max_distance:  # Respecte la portée d'attaque
                     new_x = unit.x + dx
                     new_y = unit.y + dy
-                    if 0 <= new_x < GRID_SIZE_X and 0 <= new_y < GRID_SIZE_Y:  # Reste dans la grille
+                    if (
+                        0 <= new_x < GRID_SIZE_X and 0 <= new_y < GRID_SIZE_Y  # Reste dans la grille
+                        and self.logical_map[new_y][new_x] != 1  # Pas un mur
+                    ):
                         attack_range.append((new_x, new_y))
         return attack_range
+
+
 
     
 
@@ -616,9 +683,13 @@ class Game:
             # Vérifie les voisins
             for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                 nx, ny = x + dx, y + dy
-                if 0 <= nx < GRID_SIZE_X and 0 <= ny < GRID_SIZE_Y and self.logical_map[ny][nx] not in [1, 4, 5]:
+                if (
+                    0 <= nx < GRID_SIZE_X and 0 <= ny < GRID_SIZE_Y  # Rester dans la grille
+                    and self.logical_map[ny][nx] not in [1, 4, 5]  # Pas un mur ou une barricade
+                ):
                     queue.append((nx, ny, dist + 1))
         return movement_range
+
 
 
     
@@ -704,6 +775,9 @@ class Game:
                                 message = f"{target.role} a été éliminé !"
                                 self.textbox.add_message(message)
                                 opponents.remove(target)
+                                # Vérifier si l'unité éliminée avait une couronne
+                                if target.has_crown:
+                                    self.display_winner("Defenders")
                         return  # Fin de l'attaque
 
 
@@ -849,30 +923,38 @@ class Game:
                             affected_cells, eliminated_units = unit.special_ability(
                                 self.logical_map, selected_position[0], selected_position[1]
                             )
-                            for cell in affected_cells:
-                                x, y = cell
+
+                            # Animation rouge semi-transparent
+                            for x, y in affected_cells:
                                 rouge_clair = pygame.Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)
-                                rouge_clair.fill((255, 0, 0, 128))  # Rouge transparent
+                                rouge_clair.fill((255, 0, 0, 128))  # Rouge semi-transparent
                                 self.screen.blit(rouge_clair, (x * CELL_SIZE, y * CELL_SIZE))
-
                             pygame.display.update()
-                            pygame.time.wait(500)  # Pause pour visualiser les effets
+                            pygame.time.wait(150)  # Pause pour 150 ms
 
-                            # Afficher les résultats des attaques
+                            # Infliger les dégâts après l'animation
+                            for x, y in affected_cells:
+                                for opponent in opponents:
+                                    if opponent.x == x and opponent.y == y:
+                                        damage = unit.attack_power
+                                        opponent.health = max(0, opponent.health - damage)
+                                        self.textbox.add_message(f"{opponent.role} a reçu {damage} dégâts de {unit.role}!")
+                                        if opponent.health <= 0:
+                                            self.textbox.add_message(f"{opponent.role} a été éliminé par {unit.role}!")
+                                            eliminated_units.append(opponent)
+
+
+                            # Supprimer les unités éliminées de la liste des ennemis
                             for eliminated_unit in eliminated_units:
-                                self.textbox.add_message(f"{eliminated_unit.role} a été éliminé !")
                                 if eliminated_unit in opponents:
                                     opponents.remove(eliminated_unit)
-                            self.textbox.add_message(f"{unit.role} a utilisé son attaque spéciale !")
+
+                            self.textbox.add_message(f"{unit.role} a utilisé son attaque spéciale!")
                             return
 
                         # Vérifier que la nouvelle position est valide
                         if new_position in special_action_range:
                             selected_position = new_position
-
-
-
-
 
 
 
@@ -889,10 +971,10 @@ class Game:
         le déplacement, l'attaque normale et l'attaque spéciale.
         """
         if not active_units:
-            self.display_winner("Defenders" if active_units == self.enemy_units else "Attackers")
+            self.display_winner("Attackers" if active_units == self.enemy_units else "Defenders")
             return
         if not opponents:
-            self.display_winner("Attackers" if active_units == self.enemy_units else "Defenders")
+            self.display_winner("Defenders" if active_units == self.enemy_units else "Attackers")
             return
 
         selected_index = 0
@@ -967,14 +1049,6 @@ class Game:
                                 action_index = 0
 
 
-
-
-                                
-
-
-
-
-
     def move_unit(self, unit, opponents, pause_button, movement_range):
         """Déplace l'unité sélectionnée."""
         has_acted = False
@@ -1003,12 +1077,19 @@ class Game:
                     new_x = unit.x + dx
                     new_y = unit.y + dy
 
-                    if (new_x, new_y) in movement_range and self.logical_map[new_y][new_x] != 1:
+                    if (new_x, new_y) in movement_range:  # Vérifie que la cellule est accessible
                         unit.move(dx, dy, GRID_SIZE_X, GRID_SIZE_Y)
+
+                        # Vérifier l'interaction avec l'otage
+                        self.check_hostage_interaction(unit)
+
+                        # Vérifier les conditions de victoire ou de défaite
+                        self.check_extraction_or_death(unit)
 
                     if event.key == pygame.K_SPACE:
                         has_acted = True
 
+    
     def flip_display(self, pause_button=None, active_units=None, selected_index=None, color=None, movement_range=None, attack_range=None, card=None, selected_action="attack"):
         """
         Affiche l'état actuel de la grille et de l'interface, sans clignotement.
@@ -1022,33 +1103,54 @@ class Game:
                 rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
                 pygame.draw.rect(self.screen, BLACK, rect, 1)
 
-        # Dessiner les zones accessibles pour le mouvement (jaune transparent)
+        # Définir les points d'extraction
+        extraction_points = [
+        (0, 0), (0, 1), (1, 0), (1, 1),
+        (0, GRID_SIZE_Y - 2), (0, GRID_SIZE_Y - 1), (1, GRID_SIZE_Y - 2), (1, GRID_SIZE_Y - 1),
+        (GRID_SIZE_X - 2, 0), (GRID_SIZE_X - 1, 0), (GRID_SIZE_X - 2, 1), (GRID_SIZE_X - 1, 1),
+        (GRID_SIZE_X - 2, GRID_SIZE_Y - 2), (GRID_SIZE_X - 1, GRID_SIZE_Y - 2),
+        (GRID_SIZE_X - 2, GRID_SIZE_Y - 1), (GRID_SIZE_X - 1, GRID_SIZE_Y - 1)
+    ]
+        
+        # Vérifier si une unité a capturé l'otage
+        if self.hostage is None:
+            extraction_color = (255, 0, 0)  
+            self.draw_extraction_points(extraction_points, extraction_color)
+
+            # Afficher le message "Otage sécurisé"
+            font = get_font(30)
+            message = font.render("Otage sécurisé! Amenez-le à un point d'extraction.", True, (255, 0, 0))
+            message_rect = message.get_rect(center=(WIDTH // 2, 50))  # Centré en haut
+            self.screen.blit(message, message_rect)
+
+        # Dessiner les zones de portée accessibles uniquement
         if movement_range and selected_action == "move":
             for cell in movement_range:
-                jaune_clair = pygame.Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)
-                jaune_clair.fill((255, 255, 0, 128))  # Jaune transparent
-                self.screen.blit(jaune_clair, (cell[0] * CELL_SIZE, cell[1] * CELL_SIZE))
-
-        # Dessiner les zones accessibles pour l'attaque (rouge transparent)
+                if self.logical_map[cell[1]][cell[0]] == 0:  # Cellule libre uniquement
+                    jaune_clair = pygame.Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)
+                    jaune_clair.fill((255, 255, 0, 128))  # Jaune transparent
+                    self.screen.blit(jaune_clair, (cell[0] * CELL_SIZE, cell[1] * CELL_SIZE))
         if attack_range and selected_action == "attack":
             for cell in attack_range:
-                rouge_clair = pygame.Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)
-                rouge_clair.fill((255, 0, 0, 128))  # Rouge transparent
-                self.screen.blit(rouge_clair, (cell[0] * CELL_SIZE, cell[1] * CELL_SIZE))
-
-        # Dessiner les zones accessibles pour l'attaque spéciale (vert transparent)
+                if isinstance(cell, tuple) and 0 <= cell[1] < len(self.logical_map) and 0 <= cell[0] < len(self.logical_map[0]):
+                    if self.logical_map[cell[1]][cell[0]] not in [1]:  # Pas un mur, mais autoriser les barricades
+                        rouge_clair = pygame.Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)
+                        rouge_clair.fill((255, 0, 0, 128))  # Rouge transparent
+                        self.screen.blit(rouge_clair, (cell[0] * CELL_SIZE, cell[1] * CELL_SIZE))
         if attack_range and selected_action == "special":
             for cell in attack_range:
-                vert_clair = pygame.Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)
-                vert_clair.fill((0, 255, 0, 128))  # Vert transparent
-                self.screen.blit(vert_clair, (cell[0] * CELL_SIZE, cell[1] * CELL_SIZE))
-
+                if isinstance(cell, tuple) and 0 <= cell[1] < len(self.logical_map) and 0 <= cell[0] < len(self.logical_map[0]):
+                    if self.logical_map[cell[1]][cell[0]] not in [1]:  # Pas un mur
+                        vert_clair = pygame.Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)
+                        vert_clair.fill((0, 255, 0, 128))  # Vert transparent
+                        self.screen.blit(vert_clair, (cell[0] * CELL_SIZE, cell[1] * CELL_SIZE))
         # Dessiner les unités
         for unit in self.player_units + self.enemy_units:
             unit.draw(self.screen)
 
         # Dessiner l'otage
-        self.hostage.draw(self.screen)
+        if self.hostage:
+            self.hostage.draw(self.screen)
 
         # Dessiner le contour jaune autour de l'unité sélectionnée
         if active_units and selected_index is not None:
@@ -1086,6 +1188,7 @@ class Game:
         pygame.display.flip()
 
 
+
     def display_winner(self, winner):
         # Arrêter les musiques en cours
         normal_music.stop()
@@ -1115,6 +1218,7 @@ class Game:
         pygame.time.wait(6000)
 
         # Retour au menu principal
+        pygame.mixer.music.stop()
         main_menu()
 
 def play():
