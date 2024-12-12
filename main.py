@@ -618,7 +618,6 @@ class Game:
                 nx, ny = x + dx, y + dy
                 if 0 <= nx < GRID_SIZE_X and 0 <= ny < GRID_SIZE_Y and self.logical_map[ny][nx] not in [1, 4, 5]:
                     queue.append((nx, ny, dist + 1))
-
         return movement_range
 
 
@@ -857,7 +856,7 @@ class Game:
                                 self.screen.blit(rouge_clair, (x * CELL_SIZE, y * CELL_SIZE))
 
                             pygame.display.update()
-                            pygame.time.wait(1000)  # Pause pour visualiser les effets
+                            pygame.time.wait(500)  # Pause pour visualiser les effets
 
                             # Afficher les résultats des attaques
                             for eliminated_unit in eliminated_units:
