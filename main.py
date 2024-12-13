@@ -1,5 +1,13 @@
+import os
+
+def clear_terminal():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+clear_terminal()
+
 import pygame
 import sys
+import random
 from scipy.ndimage import zoom
 from unit import Unit, Hostage
 from game_button import Button
@@ -272,11 +280,11 @@ class Game:
     def __init__(self, screen):
         self.screen = screen
 
-        # Largeur égale à celle de la carte, hauteur étendue
+        # Hauteur du textbox égale à celle de la carte, largeur étendue
         self.textbox = TextBox(
             screen=self.screen,
-            width=850,
-            height=600,  # Longueur étendue
+            width=850, #Largeur étendue
+            height=600,  
             font=get_font(20),  # Police plus petite pour les messages
             x=700,  # À côté de la carte avec une séparation
             y=HEIGHT - 250  # Aligné à la carte
@@ -345,9 +353,16 @@ class Game:
             Caveira(47,4)
         ]
 
-        # Placer l'otage dans son lit de la grille
+        # Placer l'otage dans son lit
         self.hostage = Hostage(GRID_SIZE_X // 2 + 6, GRID_SIZE_Y // 2 +2, r"assets/Hostage.png")
-   
+
+         # Initialiser les kits de soin
+        self.healthkits = self.generate_healthkits()
+        self.healthkit_image = pygame.image.load("assets/healthkit.png")
+        self.healthkit_image = pygame.transform.scale(self.healthkit_image, (self.cell_size, self.cell_size))
+
+        self.update_unit_positions()
+        self.update_logical_map()
 
         # Ajuster les positions des unités et de l'otage en fonction de la nouvelle carte
         self.update_unit_positions()
@@ -357,6 +372,7 @@ class Game:
 
          # Appeler la phase de placement initial
         self.initial_placement_phase()
+        
 
     def initial_placement_phase(self):
         """Phase de placement initial pour le joueur 2."""
@@ -528,7 +544,13 @@ class Game:
                             )
                             if armored_barricade_limit == 0:  # Fin du placement
                                 placing_armored = False
-
+    def generate_healthkits(self):
+        """
+        Génère aléatoirement 5 kits de soin dans la maison au début de chaque partie.
+        Retourne une liste de positions (x, y) des kits de soin.
+        """
+        house_area = [(x, y) for x in range(10, 20) for y in range(10, 20)]  # Définir les limites de la maison
+        return random.sample(house_area, 5)
         # Mise à jour de la carte logique après placement des barricades
         self.update_logical_map()
     def update_logical_map(self):
@@ -557,6 +579,41 @@ class Game:
             for x, cell in enumerate(row):
                 if cell == 5:  # Si une barricade blindée est détectée
                     self.logical_map[y][x] = 5  # Maintenir le type de barricade blindée
+        
+        # Ajouter les kits de soin
+        for x, y in self.healthkits:
+            if self.logical_map[y][x] == 0:  # Place un kit de soin uniquement si la cellule est vide
+                self.logical_map[y][x] = 6  # 6 représente un kit de soin
+    def draw_healthkits(self):
+        """
+        Dessine les kits de soin sur la carte.
+        """
+        for x, y in self.healthkits:
+            self.screen.blit(self.healthkit_image, (x * self.cell_size, y * self.cell_size))
+
+    def handle_healthkit_interaction(self, unit):
+        """
+        Vérifie si une unité est sur un kit de soin et applique ses effets.
+        :param unit: L'unité active.
+        """
+        for x, y in self.healthkits:
+            if (unit.x, unit.y) == (x, y):
+                if unit.health < unit.max_health:
+                    # Calcul des HP récupérés
+                    hp_before = unit.health
+                    unit.health = min(unit.max_health, unit.health + 20)
+                    hp_recovered = unit.health - hp_before
+
+                    # Ajouter un message détaillant combien de HP ont été récupérés
+                    self.textbox.add_message(f"{unit.role} a récupéré un kit de soin et récupère {hp_recovered} HP!")
+
+                    # Retirer le kit de soin
+                    self.healthkits.remove((x, y))
+                    self.logical_map[y][x] = 0  # Libère la cellule
+                    break
+                else:
+                    # Message pour informer que l'unité est déjà à pleine santé
+                    self.textbox.add_message(f"{unit.role} est déjà à pleine santé.")
 
     def update_unit_positions(self):
         original_width = len(self.logical_map[0])
@@ -698,12 +755,11 @@ class Game:
                     0 <= nx < GRID_SIZE_X and 0 <= ny < GRID_SIZE_Y  # Rester dans la grille
                     and self.logical_map[ny][nx] not in [1, 4, 5]  # Pas un mur ou une barricade
                 ):
+                    # Les cases contenant un kit de soin sont traversables
                     queue.append((nx, ny, dist + 1))
         return movement_range
 
 
-
-    
 
     def handle_attack(self, unit, opponents, selected_action="attack"):
         """
@@ -1105,6 +1161,9 @@ class Game:
                     if (new_x, new_y) in movement_range:  # Vérifie que la cellule est accessible
                         unit.move(dx, dy, GRID_SIZE_X, GRID_SIZE_Y)
 
+                        # Vérifier l'interaction avec un kit de soin
+                        self.handle_healthkit_interaction(unit)
+
                         # Vérifier l'interaction avec l'otage
                         self.check_hostage_interaction(unit)
 
@@ -1127,7 +1186,8 @@ class Game:
             for y in range(0, HEIGHT, CELL_SIZE):
                 rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
                 pygame.draw.rect(self.screen, BLACK, rect, 1)
-
+        # Dessiner les kits de soin
+        self.draw_healthkits()
          # Gérer le clignotement des points d'extraction et du message
         current_time = pygame.time.get_ticks()
         if current_time - self.last_blink_time >= 600:  # Alterner toutes les secondes
