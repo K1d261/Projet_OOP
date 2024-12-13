@@ -22,25 +22,23 @@ pygame.mixer.init()
 pygame.mixer.music.load("assets/chess.mp3")
 pygame.mixer.music.play(loops=-1, start=0.0)
 
-
 # Ajouter un attribut par défaut "has_crown" à toutes les unités
 def initialize_units_with_crown(units):
     for unit in units:
         unit.has_crown = False
 
-
 # Obtenir la taille de l'écran
-screen_info = pygame.display.Info()
-WIDTH = screen_info.current_w
-HEIGHT = screen_info.current_h
-
-# Taille des cellules
+WIDTH = 1920
+HEIGHT = 1200
 CELL_SIZE = 40
 
 # Calculer le nombre de cellules qui peuvent tenir sur l'écran
-GRID_SIZE_X = WIDTH // CELL_SIZE  # Nombre de cellules sur l'axe X (horizontal)
-GRID_SIZE_Y = HEIGHT // CELL_SIZE  # Nombre de cellules sur l'axe Y (vertical)
+GRID_SIZE_X = WIDTH // CELL_SIZE
+GRID_SIZE_Y = HEIGHT // CELL_SIZE
 
+# Vérifications pour garantir que la grille et la carte sont alignées
+assert WIDTH % CELL_SIZE == 0, "La largeur de la carte n'est pas un multiple de la taille des cellules."
+assert HEIGHT % CELL_SIZE == 0, "La hauteur de la carte n'est pas un multiple de la taille des cellules."
 
 # Couleurs
 WHITE = (255, 255, 255)
@@ -48,66 +46,52 @@ BLACK = (0, 0, 0)
 
 # Charger les actifs
 MAP = pygame.image.load("assets/mapv2-1.png")
-MAP = pygame.transform.scale(MAP, (WIDTH, HEIGHT))
+
+# Ajuster l'image de la carte pour correspondre à la grille
+def adjust_map_alignment(map_surface, grid_width, grid_height, cell_size):
+    """
+    Ajuste l'image de la carte pour correspondre exactement à la taille de la grille.
+    """
+    target_width = grid_width * cell_size
+    target_height = grid_height * cell_size
+    return pygame.transform.scale(map_surface, (target_width, target_height))
+
+MAP = adjust_map_alignment(MAP, GRID_SIZE_X, GRID_SIZE_Y, CELL_SIZE)
 CARD_BACKGROUND = pygame.image.load("assets/Card.png")
 CARD_BACKGROUND = pygame.transform.scale(CARD_BACKGROUND, (350, 650))
-
 
 # Charger les deux versions de la musique
 normal_music = pygame.mixer.Sound("assets/Metroid - Kraids Lair (Analog Synth remake).mp3")
 muffled_music = pygame.mixer.Sound("assets/Metroid - Kraids Lair (Analog Synth remake) muffled.mp3")
 
-# Par défaut, volume normal pour la musique normale, 0 pour la musique étouffée
-normal_music.set_volume(1.0)  # Plein volume
-muffled_music.set_volume(0.0)  # Silence
-
-
+normal_music.set_volume(1.0)
+muffled_music.set_volume(0.0)
 
 def toggle_music_volume(pause=False):
-    """
-    Ajuste le volume des musiques en fonction de l'état du jeu.
-    :param pause: True si le jeu est en pause, False si le jeu reprend.
-    """
     if pause:
-        # Baisser la musique normale et augmenter la musique étouffée
         normal_music.set_volume(0.0)
         muffled_music.set_volume(1.0)
     else:
-        # Remettre la musique normale et baisser la musique étouffée
         normal_music.set_volume(1.0)
         muffled_music.set_volume(0.0)
 
-
 def get_font(size):
-    """Charge une police d'écriture."""
     return pygame.font.Font("assets/font.ttf", size)
 
-
 def pause_menu():
-    """Affiche le menu pause avec musique étouffée."""
-    toggle_music_volume(pause=True)  # Activer l'effet étouffé
-
-    # Charger l'image de fond
+    toggle_music_volume(pause=True)
     pause_background = pygame.image.load("assets/Pause_menu.jpg")
-    pause_background = pygame.transform.scale(pause_background, (WIDTH, HEIGHT))  # Adapter à la taille de l'écran
-
-    # Boutons dans le menu pause
+    pause_background = pygame.transform.scale(pause_background, (WIDTH, HEIGHT))
     resume_button = Button(None, (WIDTH // 2, HEIGHT // 2 - 50), "RESUME", get_font(40), "White", "Yellow")
     menu_button = Button(None, (WIDTH // 2, HEIGHT // 2 + 50), "MAIN MENU", get_font(40), "White", "Yellow")
     quit_button = Button(None, (WIDTH // 2, HEIGHT // 2 + 150), "QUIT", get_font(40), "White", "Yellow")
 
     while True:
-        # Afficher l'image de fond
         SCREEN.blit(pause_background, (0, 0))
-
-        # Texte du menu pause
         pause_text = get_font(45).render("Pause", True, "White")
         SCREEN.blit(pause_text, (WIDTH // 2 - pause_text.get_width() // 2, HEIGHT // 2 - 200))
-
-        # Afficher les boutons
-        mouse_pos = pygame.mouse.get_pos()
         for button in [resume_button, menu_button, quit_button]:
-            button.changeColor(mouse_pos)
+            button.changeColor(pygame.mouse.get_pos())
             button.update(SCREEN)
 
         for event in pygame.event.get():
@@ -115,32 +99,22 @@ def pause_menu():
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if resume_button.checkForInput(mouse_pos):
-                    toggle_music_volume(pause=False)  # Revenir à la musique normale
-                    return  # Quitter le menu pause et reprendre
-                if menu_button.checkForInput(mouse_pos):
-                    # Arrêter la musique du jeu
-                    toggle_music_volume(pause=False)  # Réinitialiser les volumes
-                    # Lancer la musique du menu principal
-                    pygame.mixer.init()
+                if resume_button.checkForInput(pygame.mouse.get_pos()):
+                    toggle_music_volume(pause=False)
+                    return
+                if menu_button.checkForInput(pygame.mouse.get_pos()):
+                    toggle_music_volume(pause=False)
                     pygame.mixer.music.load("assets/chess.mp3")
                     pygame.mixer.music.play(loops=-1, start=0.0)
                     main_menu()
-                if quit_button.checkForInput(mouse_pos):
+                if quit_button.checkForInput(pygame.mouse.get_pos()):
                     pygame.quit()
                     sys.exit()
         pygame.display.update()
 
-
-
-
-
 def main_menu():
-    # Arrêter la musique du jeu si elle est en cours
     normal_music.stop()
     muffled_music.stop()
-    
-    """Affiche le menu principal."""
     bg_image = pygame.image.load("assets/Background.png")
     bg_image = pygame.transform.scale(bg_image, (WIDTH, HEIGHT))
 
@@ -174,28 +148,19 @@ def main_menu():
                     sys.exit()
         pygame.display.update()
 
-
 def rules():
-    """Affiche les règles et les informations sur les personnages."""
-     # Charger l'image de fond
     help_background = pygame.image.load("assets/Help.jpg")
-    help_background = pygame.transform.scale(help_background, (WIDTH, HEIGHT))  # Adapter à la taille de l'écran
+    help_background = pygame.transform.scale(help_background, (WIDTH, HEIGHT))
 
     while True:
-        SCREEN.blit(help_background, (0, 0))  # Afficher l'image en arrière-plan
-
-        # Afficher les règles
+        SCREEN.blit(help_background, (0, 0))
         title_text = get_font(40).render("But du jeu :", True, "White")
         defender_text_line1 = get_font(30).render(
             "Défenseurs : Placez vos unités et vos barricades, puis éliminez l'équipe des attaquants", 
             True, 
             "White"
         )
-        defender_text_line2 = get_font(30).render(
-            "ou l'unité qui escorte l'otage.", 
-            True, 
-            "White"
-        )
+        defender_text_line2 = get_font(30).render("ou l'unité qui escorte l'otage.", True, "White")
 
         attacker_text = get_font(30).render(
             "Attaquants : Eliminez l'equipe ennemie ou escortez l'otage à un point d'extraction.",
@@ -208,22 +173,17 @@ def rules():
         SCREEN.blit(defender_text_line1, (50, 120))
         SCREEN.blit(defender_text_line2, (270, 160))
 
-        # Afficher les informations des personnages
         characters_title = get_font(40).render("Personnages :", True, "White")
         SCREEN.blit(characters_title, (50, 300))
 
-        # Informations sur les attaquants
         attackers = [
             {"name": "Thermite", "hp": 100, "defense": 50, "attack": 40, "special": "Peut détruire les barricades renforcés"},
             {"name": "Fuze", "hp": 100, "defense": 50, "attack": 35, "special": "Grenades dispersées"},
             {"name": "Doc", "hp": 100, "defense": 60, "attack": 30, "special": "Soin à distance"},
             {"name": "Montagne", "hp": 200, "defense": 80, "attack": 40, "special": "Pas d'attaque spéciale, mais très résistant"},
             {"name": "Glaz", "hp": 100, "defense": 50, "attack": 40, "special": "Pas d'attaque spéciale, mais très rapide"},
-            
-            
         ]
 
-        # Informations sur les défenseurs
         defenders = [
             {"name": "Jackal", "hp": 100, "defense": 50, "attack": 40, "special": "Peut détruire les barricades renforcés"},
             {"name": "Kapkan", "hp": 100, "defense": 50, "attack": 35, "special": "Grenades dispersées"},
@@ -232,7 +192,6 @@ def rules():
             {"name": "Smoke", "hp": 100, "defense": 60, "attack": 40, "special": "Pas d'attaque spéciale, mais très rapide"},
         ]
 
-            # Affichage des attaquants
         attackers_title = get_font(30).render("Attaquants :", True, "White")
         SCREEN.blit(attackers_title, (50, 350))
 
@@ -247,7 +206,6 @@ def rules():
             SCREEN.blit(attacker_text, (50, y_offset))
             y_offset += 40
 
-        # Affichage des défenseurs
         defenders_title = get_font(30).render("Défenseurs :", True, "White")
         SCREEN.blit(defenders_title, (50, y_offset + 20))
 
@@ -262,7 +220,6 @@ def rules():
             SCREEN.blit(defender_text, (50, y_offset))
             y_offset += 40
 
-        # Affichage des contrôles
         controls_title = get_font(30).render("Contrôles :", True, "White")
         SCREEN.blit(controls_title, (50, y_offset + 20))
 
@@ -279,7 +236,6 @@ def rules():
             SCREEN.blit(control_line, (50, y_offset))
             y_offset += 30
 
-        # Bouton de retour
         back_button = Button(None, (WIDTH // 2, HEIGHT - 100), "BACK", get_font(40), "White", "Yellow")
         back_button.changeColor(pygame.mouse.get_pos())
         back_button.update(SCREEN)
@@ -294,26 +250,20 @@ def rules():
 
         pygame.display.update()
 
-def adapt_logical_map(logical_map, grid_width, grid_height):
-    """
-    Adapte une carte logique à la nouvelle taille basée sur les dimensions de la grille.
-    
-    :param logical_map: Liste 2D représentant la carte logique originale.
-    :param grid_width: Largeur de la nouvelle grille.
-    :param grid_height: Hauteur de la nouvelle grille.
-    :return: Nouvelle carte logique adaptée.
-    """
-    original_height = len(logical_map)
-    original_width = len(logical_map[0]) if original_height > 0 else 0
+def adapt_logical_map(logical_map, target_width, target_height):
+    """Resize the logical map to the target width and height."""
+    # Truncate or pad rows
+    resized_map = logical_map[:target_height]
+    while len(resized_map) < target_height:
+        resized_map.append([0] * len(logical_map[0]))
 
-    # Calculer les facteurs d'échelle
-    scale_y = grid_height / original_height
-    scale_x = grid_width / original_width
+    # Truncate or pad columns in each row
+    for i in range(len(resized_map)):
+        resized_map[i] = resized_map[i][:target_width]
+        while len(resized_map[i]) < target_width:
+            resized_map[i].append(0)
 
-    # Redimensionner la carte avec interpolation
-    resized_map = zoom(logical_map, (scale_y, scale_x), order=0)  # Ne pas lisser les valeurs (0 = nearest neighbor)
-    return resized_map.astype(int).tolist()
-
+    return resized_map
 
 
 class Game:
@@ -1050,17 +1000,17 @@ class Game:
         action_index = 0  # Par défaut, l'action "attack" est sélectionnée
         movement_range = None
         attack_range = None
-        action_completed = False
+        actions_completed = {"move": False, "action": False}  # Suivi des actions effectuées
 
         selected_unit = active_units[selected_index]
         card = Card(selected_unit, self.screen)
 
-        while not action_completed:
+        while not (actions_completed["move"] and actions_completed["action"]):
             if has_selected_unit:
-                if actions[action_index] == "move":
+                if actions[action_index] == "move" and not actions_completed["move"]:
                     movement_range = self.get_movement_range(selected_unit)
                     attack_range = None
-                elif actions[action_index] in ["attack", "special"]:
+                elif actions[action_index] in ["attack", "special"] and not actions_completed["action"]:
                     attack_range = self.get_attack_range(selected_unit)
                     movement_range = None
 
@@ -1101,19 +1051,27 @@ class Game:
                         elif event.key == pygame.K_RIGHT:
                             action_index = (action_index + 1) % len(actions)
                         elif event.key == pygame.K_SPACE:
-                            if actions[action_index] == "move":
+                            if actions[action_index] == "move" and not actions_completed["move"]:
                                 self.move_unit(selected_unit, opponents, pause_button, movement_range)
-                                action_completed = True
-                            elif actions[action_index] == "attack":
+                                actions_completed["move"] = True
+                            elif actions[action_index] == "attack" and not actions_completed["action"]:
                                 self.handle_attack(selected_unit, opponents)
-                                action_completed = True
-                            elif actions[action_index] == "special":
+                                actions_completed["action"] = True
+                            elif actions[action_index] == "special" and not actions_completed["action"]:
                                 special_action_range = self.get_attack_range(selected_unit)
                                 self.handle_special_attack(selected_unit, opponents, special_action_range)
-                                action_completed = True
+                                actions_completed["action"] = True
                             elif actions[action_index] == "back":
-                                has_selected_unit = False
-                                action_index = 0
+                                if not any(actions_completed.values()):
+                                    has_selected_unit = False
+                                    action_index = 0
+                                else:
+                                    self.textbox.add_message("Vous ne pouvez pas changer d'unité!")
+
+            if actions_completed["move"] and actions_completed["action"]:
+                break
+
+
 
 
     def move_unit(self, unit, opponents, pause_button, movement_range):
