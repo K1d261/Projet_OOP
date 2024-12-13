@@ -185,50 +185,99 @@ def rules():
         SCREEN.blit(help_background, (0, 0))  # Afficher l'image en arrière-plan
 
         # Afficher les règles
-        title_text = get_font(50).render("But du jeu :", True, "White")
-        attacker_text = get_font(30).render(
-            "- Pour les attaquants : libérer l'otage (rester à côté de lui pendant 10 tours consécutifs) ou tuer l'équipe énemie.",
-            True,
+        title_text = get_font(40).render("But du jeu :", True, "White")
+        defender_text_line1 = get_font(30).render(
+            "Défenseurs : Placez vos unités et vos barricades, puis éliminez l'équipe des attaquants", 
+            True, 
             "White"
         )
-        defender_text = get_font(30).render(
-            "- Pour les défenseurs : retenir l'otage pendant 100 tours ou tuer l'équipe des attaquants.",
+        defender_text_line2 = get_font(30).render(
+            "ou l'unité qui escorte l'otage.", 
+            True, 
+            "White"
+        )
+
+        attacker_text = get_font(30).render(
+            "Attaquants : Eliminez l'equipe ennemie ou escortez l'otage à un point d'extraction.",
             True,
             "White"
         )
 
-        SCREEN.blit(title_text, (WIDTH // 2 - title_text.get_width() // 2, 50))
-        SCREEN.blit(attacker_text, (50, 150))
-        SCREEN.blit(defender_text, (50, 200))
+        SCREEN.blit(title_text, (50, 50))
+        SCREEN.blit(attacker_text, (50, 220))        
+        SCREEN.blit(defender_text_line1, (50, 120))
+        SCREEN.blit(defender_text_line2, (270, 160))
 
         # Afficher les informations des personnages
         characters_title = get_font(40).render("Personnages :", True, "White")
         SCREEN.blit(characters_title, (50, 300))
 
-        # Informations sur les personnages
-        characters = [
-            {"name": "Thermite", "hp": 120, "defense": 50, "attack": 50, "special": "Détruire les murs renforcés"},
-            {"name": "Glaz", "hp": 100, "defense": 70, "attack": 30, "special": "Tir de précision à longue portée"},
-            {"name": "Fuze", "hp": 120, "defense": 60, "attack": 30, "special": "Grenades dispersées"},
-            {"name": "Montagne", "hp": 200, "defense": 40, "attack": 75, "special": "Bouclier extensible"},
-            {"name": "Doc", "hp": 120, "defense": 50, "attack": 75, "special": "Soin à distance"},
-            {"name": "Jackal", "hp": 120, "defense": 50, "attack": 50, "special": "Traquer les empreintes"},
-            {"name": "Smoke", "hp": 100, "defense": 60, "attack": 30, "special": "Gaz toxique"},
-            {"name": "Jaeger", "hp": 120, "defense": 40, "attack": 30, "special": "Neutraliser les projectiles"},
-            {"name": "Caveira", "hp": 100, "defense": 80, "attack": 50, "special": "Interrogation des ennemis"},
-            {"name": "Kapkan", "hp": 120, "defense": 70, "attack": 75, "special": "Pièges explosifs"}
+        # Informations sur les attaquants
+        attackers = [
+            {"name": "Thermite", "hp": 100, "defense": 50, "attack": 40, "special": "Peut détruire les barricades renforcés"},
+            {"name": "Fuze", "hp": 100, "defense": 50, "attack": 35, "special": "Grenades dispersées"},
+            {"name": "Doc", "hp": 100, "defense": 60, "attack": 30, "special": "Soin à distance"},
+            {"name": "Montagne", "hp": 200, "defense": 80, "attack": 40, "special": "Pas d'attaque spéciale, mais très résistant"},
+            {"name": "Glaz", "hp": 100, "defense": 50, "attack": 40, "special": "Pas d'attaque spéciale, mais très rapide"},
+            
+            
         ]
 
-        y_offset = 350
-        for character in characters:
-            character_text = get_font(25).render(
-                f"{character['name']} - HP: {character['hp']} | Défense: {character['defense']} | "
-                f"Attaque: {character['attack']} | Spéciale: {character['special']}",
+        # Informations sur les défenseurs
+        defenders = [
+            {"name": "Jackal", "hp": 100, "defense": 50, "attack": 40, "special": "Peut détruire les barricades renforcés"},
+            {"name": "Kapkan", "hp": 100, "defense": 50, "attack": 35, "special": "Grenades dispersées"},
+            {"name": "Caveira", "hp": 100, "defense": 60, "attack": 30, "special": "Soin à distance"},
+            {"name": "Jaeger", "hp": 200, "defense": 80, "attack": 40, "special": "Pas d'attaque spéciale, mais très résistant"},        
+            {"name": "Smoke", "hp": 100, "defense": 60, "attack": 40, "special": "Pas d'attaque spéciale, mais très rapide"},
+        ]
+
+            # Affichage des attaquants
+        attackers_title = get_font(30).render("Attaquants :", True, "White")
+        SCREEN.blit(attackers_title, (50, 350))
+
+        y_offset = 400
+        for attacker in attackers:
+            attacker_text = get_font(25).render(
+                f"{attacker['name']} - HP: {attacker['hp']} | Défense: {attacker['defense']} | "
+                f"Attaque: {attacker['attack']} | Spéciale: {attacker['special']}",
                 True,
                 "White"
             )
-            SCREEN.blit(character_text, (50, y_offset))
+            SCREEN.blit(attacker_text, (50, y_offset))
             y_offset += 40
+
+        # Affichage des défenseurs
+        defenders_title = get_font(30).render("Défenseurs :", True, "White")
+        SCREEN.blit(defenders_title, (50, y_offset + 20))
+
+        y_offset += 60
+        for defender in defenders:
+            defender_text = get_font(25).render(
+                f"{defender['name']} - HP: {defender['hp']} | Défense: {defender['defense']} | "
+                f"Attaque: {defender['attack']} | Spéciale: {defender['special']}",
+                True,
+                "White"
+            )
+            SCREEN.blit(defender_text, (50, y_offset))
+            y_offset += 40
+
+        # Affichage des contrôles
+        controls_title = get_font(30).render("Contrôles :", True, "White")
+        SCREEN.blit(controls_title, (50, y_offset + 20))
+
+        controls_text = [
+            "Avec la souris : placer des unités et des barricades.",
+            "Touche espace : confirmer votre choix.",
+            "Flèches haut/bas/gauche/droite : parcourir les cases.",
+            "Flèches gauche/droite : basculer entre unités, actions et cibles."
+        ]
+
+        y_offset += 60
+        for line in controls_text:
+            control_line = get_font(25).render(line, True, "White")
+            SCREEN.blit(control_line, (50, y_offset))
+            y_offset += 30
 
         # Bouton de retour
         back_button = Button(None, (WIDTH // 2, HEIGHT - 100), "BACK", get_font(40), "White", "Yellow")
@@ -289,6 +338,10 @@ class Game:
         # Calculer les dimensions de la grille en fonction de l'écran
         self.grid_size_x = WIDTH // self.cell_size
         self.grid_size_y = HEIGHT // self.cell_size
+        
+        #Clignottement
+        self.blink_state = True  # Indique si les points d'extraction et le message doivent être visibles
+        self.last_blink_time = pygame.time.get_ticks()  # Enregistre le dernier temps de changement
 
         original_map = [
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 0
@@ -358,18 +411,22 @@ class Game:
     def initial_placement_phase(self):
         """Phase de placement initial pour le joueur 2."""
         font = get_font(40)
-        message = font.render("Player 2: place your defendants!", True, WHITE)
-        message_rect = message.get_rect(center=(WIDTH // 2, 50))
-
-    # Création du bouton pause
-        pause_button = Button(pygame.image.load("assets/Pause Rect.png"), (WIDTH - 150, 50),
-                          "PAUSE", get_font(20), "#d7fcd4", "Yellow")
-
         units_to_place = self.enemy_units.copy()
         placed_units = []
 
         while units_to_place:
-        # Afficher le message et la grille
+            current_unit = units_to_place[0]  # Récupérer l'unité en cours de placement
+            message = font.render(
+            f"Defenseur: place {current_unit.role}!", 
+                True, WHITE
+            )
+            message_rect = message.get_rect(center=(WIDTH // 2, 50))
+
+            # Création du bouton pause
+            pause_button = Button(pygame.image.load("assets/Pause Rect.png"), (WIDTH - 150, 50),
+                                "PAUSE", get_font(20), "#d7fcd4", "Yellow")
+
+            # Afficher le message et la grille
             self.screen.blit(MAP, (0, 0))
             self.screen.blit(message, message_rect)
 
@@ -419,8 +476,9 @@ class Game:
                         placed_units.append(unit)
                         self.logical_map[grid_y][grid_x] = 2  # Marquer la cellule comme occupée
 
-    # Mise à jour de la carte logique après placement
+        # Mise à jour de la carte logique après placement
         self.update_logical_map()
+
 
     # Liste des barricades placées
         barricades = []
@@ -434,7 +492,7 @@ class Game:
 
         # Ajouter un message pour indiquer que le joueur peut placer des barricades
         barricade_message = font.render(
-            f"Player 2: Place barricades normales ({barricade_limit} remaining) et blindées ({armored_barricade_limit} remaining)", 
+            f"Defenseur: Place des barricades normales ({barricade_limit} restantes) et blindées ({armored_barricade_limit} restantes)", 
             True, WHITE
         )   
         barricade_message_rect = barricade_message.get_rect(center=(WIDTH // 2, 100))
@@ -494,13 +552,13 @@ class Game:
                             self.logical_map[grid_y][grid_x] = 4  # Barricade normale
                             barricade_limit -= 1
                             barricade_message = font.render(
-                                f"Player 2: Place normal barricades ({barricade_limit} remaining)", True, WHITE
+                                f"Defenseur: Place tes barricades normales ({barricade_limit} restantes)", True, WHITE
                             )
                             if barricade_limit == 0:  # Passer aux barricades blindées
                                 placing_normals = False
                                 placing_armored = True
                                 barricade_message = font.render(
-                                    f"Player 2: Place armored barricades ({armored_barricade_limit} remaining)", True, WHITE
+                                    f"Defenseur: Place es barricades blindées ({armored_barricade_limit} restantes)", True, WHITE
                                 )
 
                     # Placement des barricades blindées
@@ -609,11 +667,10 @@ class Game:
         :param color: Couleur à utiliser pour remplir les carrés.
         """
         for point in extraction_points:
-            pygame.draw.rect(
-                self.screen,
-                color,
-                pygame.Rect(point[0] * CELL_SIZE, point[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE)
-            )
+                rouge_clair = pygame.Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)
+                rouge_clair.fill((255, 0, 0, 128))  # Rouge transparent
+                self.screen.blit(rouge_clair, (point[0] * CELL_SIZE, point[1] * CELL_SIZE))
+            
 
 
     def get_attack_range(self, unit):
@@ -642,26 +699,30 @@ class Game:
     def is_line_of_sight_clear(self, x1, y1, x2, y2):
         """
         Vérifie si la ligne de vue entre deux points est dégagée.
-        Utilise un algorithme de tracé de ligne pour détecter les obstacles.
+        Utilise l'algorithme de Bresenham pour tracer une ligne et détecter les obstacles.
         """
-        dx = x2 - x1
-        dy = y2 - y1
+        dx = abs(x2 - x1)
+        dy = abs(y2 - y1)
+        sx = 1 if x2 > x1 else -1
+        sy = 1 if y2 > y1 else -1
+        err = dx - dy
 
-        if dx == 0 and dy == 0:  # Même point
-            return True
-
-        steps = max(abs(dx), abs(dy))
-        x_step = dx / steps
-        y_step = dy / steps
-
-        for step in range(1, steps):  # Commence à 1 pour ne pas vérifier le point de départ
-            x = round(x1 + step * x_step)
-            y = round(y1 + step * y_step)
-
-            # Si une cellule est un mur ou une barricade, ou hors limite
-            if not (0 <= x < GRID_SIZE_X and 0 <= y < GRID_SIZE_Y) or self.logical_map[y][x] in [1, 4, 5]:
+        x, y = x1, y1
+        while (x, y) != (x2, y2):
+            # Vérifie si la cellule contient un mur ou une barricade
+            if self.logical_map[y][x] in [1, 4, 5]:
                 return False
+            
+            e2 = 2 * err
+            if e2 > -dy:
+                err -= dy
+                x += sx
+            if e2 < dx:
+                err += dx
+                y += sy
+
         return True
+
 
 
 
@@ -710,9 +771,12 @@ class Game:
         for x, y in attack_range:
             if 0 <= x < GRID_SIZE_X and 0 <= y < GRID_SIZE_Y:
                 if self.logical_map[y][x] == 4:  # Barricade normale
-                    valid_targets.append((x, y))
+                    if self.is_line_of_sight_clear(unit.x, unit.y, x, y):
+                        valid_targets.append((x, y))
                 elif self.logical_map[y][x] == 5 and selected_action == "special":  # Barricade blindée
-                    valid_targets.append((x, y))
+                    if self.is_line_of_sight_clear(unit.x, unit.y, x, y):
+                        valid_targets.append((x, y))
+
 
         if not valid_targets:
             self.textbox.add_message("Aucune cible valide dans la portée.")
@@ -767,7 +831,7 @@ class Game:
                                 self.textbox.add_message(message)
                             self.logical_map[target_y][target_x] = 0  # Retirer la barricade
                         else:  # Cible est une unité
-                            damage = unit.attack_power
+                            damage = max(10, unit.attack_power - (unit.defense * 0.3))
                             target.health = max(0, target.health - damage)
                             message = f"{unit.role} attaque {target.role} et inflige {damage} dégâts !"
                             self.textbox.add_message(message)
@@ -951,10 +1015,13 @@ class Game:
 
                             self.textbox.add_message(f"{unit.role} a utilisé son attaque spéciale!")
                             return
-
+                        
                         # Vérifier que la nouvelle position est valide
                         if new_position in special_action_range:
                             selected_position = new_position
+        elif unit.role in ["Montagne (Tank)", "Jaeger (Tank)", "Glaz (Scout)","Smoke (Scout)"]:
+            self.textbox.add_message(f"{unit.role} n'a pas d'attaque spéciale!")
+            
 
 
 
@@ -1103,6 +1170,12 @@ class Game:
                 rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
                 pygame.draw.rect(self.screen, BLACK, rect, 1)
 
+         # Gérer le clignotement des points d'extraction et du message
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_blink_time >= 600:  # Alterner toutes les secondes
+            self.blink_state = not self.blink_state
+            self.last_blink_time = current_time
+
         # Définir les points d'extraction
         extraction_points = [
         (0, 0), (0, 1), (1, 0), (1, 1),
@@ -1113,13 +1186,13 @@ class Game:
     ]
         
         # Vérifier si une unité a capturé l'otage
-        if self.hostage is None:
+        if self.hostage is None and self.blink_state:
             extraction_color = (255, 0, 0)  
             self.draw_extraction_points(extraction_points, extraction_color)
 
             # Afficher le message "Otage sécurisé"
             font = get_font(30)
-            message = font.render("Otage sécurisé! Amenez-le à un point d'extraction.", True, (255, 0, 0))
+            message = font.render("Otage sécurisé! Vite, allez a un point d'extraction!", True, (255, 0, 0))
             message_rect = message.get_rect(center=(WIDTH // 2, 50))  # Centré en haut
             self.screen.blit(message, message_rect)
 
@@ -1219,6 +1292,10 @@ class Game:
 
         # Retour au menu principal
         pygame.mixer.music.stop()
+        # Lancer la musique du menu principal
+        pygame.mixer.init()
+        pygame.mixer.music.load("assets/chess.mp3")
+        pygame.mixer.music.play(loops=-1, start=0.0)
         main_menu()
 
 def play():

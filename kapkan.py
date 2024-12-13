@@ -4,10 +4,10 @@ class Kapkan(Unit):
     def __init__(self, x, y):
         super().__init__(
             x, y,
-            health=120,
-            attack_power=60,
-            defense=40,
-            speed=3,
+            health=100,
+            attack_power=35,
+            defense=50,
+            speed=5,
             team='enemy',
             role='Kapkan (Bomber)',
             image_path='assets/images/kapkan.png'

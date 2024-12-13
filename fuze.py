@@ -2,7 +2,7 @@ import pygame
 from unit import Unit
 class Fuze(Unit):
     def __init__(self, x, y):
-        super().__init__(x, y, health=120, attack_power=60, defense=30, speed=3, team='player', role='Fuze (Bomber)', image_path='assets/images/fuze.png')
+        super().__init__(x, y, health=100, attack_power=35, defense=50, speed=5, team='player', role='Fuze (Bomber)', image_path='assets/images/fuze.png')
         self.damaged_units = []  # Pour suivre les unités endommagées
 
     def special_ability(self, game_map, target_x, target_y):

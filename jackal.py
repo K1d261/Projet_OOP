@@ -4,10 +4,10 @@ class Jackal(Unit):
     def __init__(self, x, y):
         super().__init__(
             x, y,
-            health=120,
-            attack_power=50,
+            health=100,
+            attack_power=40,
             defense=50,
-            speed=4,
+            speed=5,
             team='enemy',
             role='Jackal (Demolitionist)',
             image_path='assets/images/jackal.png'

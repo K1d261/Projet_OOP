@@ -4,10 +4,10 @@ class Doc(Unit):
     def __init__(self, x, y):
         super().__init__(
             x, y,
-            health=120,
-            attack_power=20,
-            defense=75,
-            speed=2,
+            health=100,
+            attack_power=30,
+            defense=60,
+            speed=5,
             team='player',
             role='Doc (Medic)',
             image_path='assets/images/doc.png'
