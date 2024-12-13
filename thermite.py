@@ -1,7 +1,7 @@
 from unit import Unit
 class Thermite(Unit):
     def __init__(self, x, y):
-        super().__init__(x, y, health=100, attack_power=40, defense=50, speed=5, team='player', role='Thermite (Demolitionist)', image_path='assets/images/thermite.png')
+        super().__init__(x, y, health=100, attack_power=40, defense=50, speed=5000, team='player', role='Thermite (Demolitionist)', image_path='assets/images/thermite.png')
         self.damaged_units = []  # Liste pour suivre les unités endommagées
 
     def special_ability(self, game_map, target_x, target_y):

@@ -8,12 +8,10 @@ screen_info = pygame.display.Info()
 WIDTH = screen_info.current_w
 HEIGHT = screen_info.current_h
 
-# Choisir la taille des cellules
-CELL_SIZE = 40  # Taille de chaque cellule de la grille
+GRID_SIZE_X = 32
+GRID_SIZE_Y = 18
 
-# Calculer le nombre de cellules qui peuvent tenir sur l'écran
-GRID_SIZE_X = WIDTH // CELL_SIZE  # Nombre de cellules sur l'axe X (horizontal)
-GRID_SIZE_Y = HEIGHT // CELL_SIZE  # Nombre de cellules sur l'axe Y (vertical)
+CELL_SIZE = WIDTH // GRID_SIZE_X
 
 
 class Unit:

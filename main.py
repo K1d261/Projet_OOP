@@ -30,14 +30,43 @@ pygame.mixer.init()
 pygame.mixer.music.load("assets/chess.mp3")
 pygame.mixer.music.play(loops=-1, start=0.0)
 
+# Charger les sons au démarrage du jeu
+regen_sound = pygame.mixer.Sound("assets/regenerer.mp3")
+break_sound = pygame.mixer.Sound("assets/casser.mp3")
+shot_sound = pygame.mixer.Sound("assets/fortnite-pump-shotgun.mp3")
+explosion_sound = pygame.mixer.Sound("assets/explosion.mp3")
+death_sound = pygame.mixer.Sound("assets/death.mp3")
+#Fonctions pour génerer les sons
+
+def play_regen_sound():
+    regen_sound.play()
+
+def play_break_sound():
+    break_sound.play()
+
+
+def play_shot_sound():
+    shot_sound.play()
+
+def play_explosion_sound():
+    explosion_sound = pygame.mixer.Sound("assets/explosion.mp3")
+    explosion_sound.play()
+
+def play_death_sound():
+    death_sound = pygame.mixer.Sound("assets/death.mp3")
+    death_sound.play()
+
+
 # Ajouter un attribut par défaut "has_crown" à toutes les unités
 def initialize_units_with_crown(units):
     for unit in units:
         unit.has_crown = False
 
 # Obtenir la taille de l'écran
-WIDTH = 1920
-HEIGHT = 1200
+screen_info = pygame.display.Info()
+WIDTH = screen_info.current_w
+HEIGHT = screen_info.current_h
+
 
 
 # Calculer le nombre de cellules qui peuvent tenir sur l'écran
@@ -302,36 +331,24 @@ class Game:
         self.last_blink_time = pygame.time.get_ticks()  # Enregistre le dernier temps de changement
 
         original_map = [
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 0
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 1
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 2
-        [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0],  # Ligne 3
-        [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0],  # Ligne 4
-        [0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 5
-        [0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 6
-        [0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 7
-        [0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 8
-        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 9
-        [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 10
-        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 11
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 12
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 13
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0],  # Ligne 14
-        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0],  # Ligne 15
-        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 16
-        [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 17
-        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 18
-        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 19
-        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 20
-        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 21
-        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 22
-        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 23
-        [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0],  # Ligne 24
-        [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0],  # Ligne 25
-        [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0],  # Ligne 26
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 27
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 28
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]  # Ligne 29
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 0
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 1
+    [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],  # Ligne 2
+    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],  # Ligne 3
+    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 4
+    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 5
+    [0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],  # Ligne 6
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],  # Ligne 7
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0],  # Ligne 8
+    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],  # Ligne 9
+    [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],  # Ligne 10
+    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 11
+    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 12
+    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],  # Ligne 13
+    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],  # Ligne 14
+    [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],  # Ligne 15
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 16
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]   # Ligne 17
         ]
 
         # Adapter la carte logique à la taille de l'écran
@@ -339,11 +356,11 @@ class Game:
 
         # Créer les unités personnalisées
         self.player_units = [
-            Thermite(0, 13),
-            Glaz(1, 13),
-            Fuze(0, 14),
-            Montagne(1, 14),
-            Doc(2, 14)
+            Thermite(0, 6),
+            Glaz(0, 7),
+            Fuze(0, 8),
+            Montagne(0, 9),
+            Doc(0, 10)
         ]
         self.enemy_units = [
             Jackal(47, 0),
@@ -370,9 +387,39 @@ class Game:
         
         self.update_logical_map()
 
+        # Afficher les kits de soin dès le début
+        self.draw_healthkits()
+
          # Appeler la phase de placement initial
         self.initial_placement_phase()
         
+    def draw_healthkits(self):
+        """
+        Dessine les kits de soin sur la carte.
+        """
+        for x, y in self.healthkits:
+            self.screen.blit(self.healthkit_image, (x * self.cell_size, y * self.cell_size))
+
+    def generate_healthkits(self):
+        """
+        Génère aléatoirement 5 kits de soin dans la maison au début de chaque partie.
+        Retourne une liste de positions (x, y) des kits de soin qui ne se trouvent pas à l'intérieur des murs.
+        """
+        # Définir les limites de la maison
+        house_area = [
+            (x, y)
+            for x in range(3, 28)
+            for y in range(3, 16)
+            if self.logical_map[y][x] != 1  # Exclure les murs
+        ]
+
+        # S'assurer qu'il y a au moins 5 emplacements valides
+        if len(house_area) < 5:
+            raise ValueError("Pas assez de cellules valides pour placer les kits de soin dans la maison.")
+
+        # Retourner 5 positions aléatoires
+        return random.sample(house_area, 5)
+
 
     def initial_placement_phase(self):
         """Phase de placement initial pour le joueur 2."""
@@ -552,8 +599,8 @@ class Game:
         # Définir les limites de la maison
         house_area = [
             (x, y)
-            for x in range(10, 20)
-            for y in range(10, 20)
+            for x in range(3, 28)
+            for y in range(3, 16)
             if self.logical_map[y][x] != 1  # Exclure les murs
         ]
         
@@ -564,7 +611,9 @@ class Game:
         # Retourner 5 positions aléatoires
         return random.sample(house_area, 5)
 
-        
+        # Dessiner les kits de soin
+        self.draw_healthkits()
+    
     def update_logical_map(self):
         """
         Met à jour la carte logique en fonction des positions des unités et de l'otage.
@@ -596,12 +645,7 @@ class Game:
         for x, y in self.healthkits:
             if self.logical_map[y][x] == 0:  # Place un kit de soin uniquement si la cellule est vide
                 self.logical_map[y][x] = 6  # 6 représente un kit de soin
-    def draw_healthkits(self):
-        """
-        Dessine les kits de soin sur la carte.
-        """
-        for x, y in self.healthkits:
-            self.screen.blit(self.healthkit_image, (x * self.cell_size, y * self.cell_size))
+
 
     def handle_healthkit_interaction(self, unit):
         """
@@ -612,6 +656,7 @@ class Game:
             if (unit.x, unit.y) == (x, y):
                 if unit.health < unit.max_health:
                     # Calcul des HP récupérés
+                    regen_sound.play()
                     hp_before = unit.health
                     unit.health = min(unit.max_health, unit.health + 20)
                     hp_recovered = unit.health - hp_before
@@ -842,18 +887,22 @@ class Game:
                     elif event.key == pygame.K_SPACE:
                         if isinstance(target, tuple):  # Cible est une barricade
                             if selected_action == "special" and unit.role == "Thermite" and self.logical_map[target_y][target_x] == 5:
+                                shot_sound.play()
                                 message = f"{unit.role} a détruit une barricade blindée !"
                                 self.textbox.add_message(message)
                             elif self.logical_map[target_y][target_x] == 4:
+                                shot_sound.play()
                                 message = f"{unit.role} a détruit une barricade normale !"
                                 self.textbox.add_message(message)
                             self.logical_map[target_y][target_x] = 0  # Retirer la barricade
                         else:  # Cible est une unité
                             damage = max(10, unit.attack_power - (unit.defense * 0.3))
                             target.health = max(0, target.health - damage)
+                            shot_sound.play()
                             message = f"{unit.role} attaque {target.role} et inflige {damage} dégâts !"
                             self.textbox.add_message(message)
                             if target.health <= 0:
+                                death_sound.play()
                                 message = f"{target.role} a été éliminé !"
                                 self.textbox.add_message(message)
                                 opponents.remove(target)
@@ -917,6 +966,7 @@ class Game:
                         elif event.key == pygame.K_SPACE:
                             # Soigner l'unité cible
                             affected_cells, _ = unit.special_ability(self.logical_map, target)
+                            regen_sound.play()
                             self.textbox.add_message(f"{unit.role} a soigné {target.role}.")
                             return
 
@@ -961,6 +1011,7 @@ class Game:
                             target_index = (target_index + 1) % len(valid_targets)
                         elif event.key == pygame.K_SPACE:
                             # Détruire la barricade
+                            break_sound.play()
                             self.logical_map[target_y][target_x] = 0
                             self.textbox.add_message(f"{unit.role} a détruit une barricade blindée.")
                             return
@@ -1020,8 +1071,11 @@ class Game:
                                     if opponent.x == x and opponent.y == y:
                                         damage = unit.attack_power
                                         opponent.health = max(0, opponent.health - damage)
+                                        explosion_sound.play()
+
                                         self.textbox.add_message(f"{opponent.role} a reçu {damage} dégâts de {unit.role}!")
                                         if opponent.health <= 0:
+                                            death_sound.play()
                                             self.textbox.add_message(f"{opponent.role} a été éliminé par {unit.role}!")
                                             eliminated_units.append(opponent)
 
@@ -1112,6 +1166,7 @@ class Game:
                             selected_unit = active_units[selected_index]
                             card.update(unit=selected_unit)
                         elif event.key == pygame.K_SPACE:
+
                             has_selected_unit = True
                     else:
                         if event.key == pygame.K_LEFT:
@@ -1192,7 +1247,7 @@ class Game:
         """
         # Dessiner la carte de fond
         self.screen.blit(MAP, (0, 0))
-
+        
         # Dessiner la grille
         for x in range(0, WIDTH, CELL_SIZE):
             for y in range(0, HEIGHT, CELL_SIZE):
