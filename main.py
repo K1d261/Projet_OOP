@@ -38,15 +38,15 @@ def initialize_units_with_crown(units):
 # Obtenir la taille de l'écran
 WIDTH = 1920
 HEIGHT = 1200
-CELL_SIZE = 40
+
 
 # Calculer le nombre de cellules qui peuvent tenir sur l'écran
-GRID_SIZE_X = WIDTH // CELL_SIZE
-GRID_SIZE_Y = HEIGHT // CELL_SIZE
+GRID_SIZE_X = 32
+GRID_SIZE_Y = 18
 
-# Vérifications pour garantir que la grille et la carte sont alignées
-assert WIDTH % CELL_SIZE == 0, "La largeur de la carte n'est pas un multiple de la taille des cellules."
-assert HEIGHT % CELL_SIZE == 0, "La hauteur de la carte n'est pas un multiple de la taille des cellules."
+CELL_SIZE = WIDTH // GRID_SIZE_X
+
+
 
 # Couleurs
 WHITE = (255, 255, 255)
@@ -547,12 +547,24 @@ class Game:
     def generate_healthkits(self):
         """
         Génère aléatoirement 5 kits de soin dans la maison au début de chaque partie.
-        Retourne une liste de positions (x, y) des kits de soin.
+        Retourne une liste de positions (x, y) des kits de soin qui ne se trouvent pas à l'intérieur des murs.
         """
-        house_area = [(x, y) for x in range(10, 20) for y in range(10, 20)]  # Définir les limites de la maison
+        # Définir les limites de la maison
+        house_area = [
+            (x, y)
+            for x in range(10, 20)
+            for y in range(10, 20)
+            if self.logical_map[y][x] != 1  # Exclure les murs
+        ]
+        
+        # S'assurer qu'il y a au moins 5 emplacements valides
+        if len(house_area) < 5:
+            raise ValueError("Pas assez de cellules valides pour placer les kits de soin dans la maison.")
+        
+        # Retourner 5 positions aléatoires
         return random.sample(house_area, 5)
-        # Mise à jour de la carte logique après placement des barricades
-        self.update_logical_map()
+
+        
     def update_logical_map(self):
         """
         Met à jour la carte logique en fonction des positions des unités et de l'otage.
