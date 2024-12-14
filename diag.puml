@@ -1,0 +1,107 @@
+@startuml
+class Unit {
+    - x : int
+    - y : int
+    - health : int
+    - max_health : int
+    - attack_power : int
+    - defense : int
+    - speed : int
+    - team : str
+    - role : str
+    - image_path : str
+    + move(dx, dy, grid_width, grid_height) : void
+    + attack(target) : void
+    + take_damage(amount) : bool
+    + draw(screen) : void
+}
+
+class Card {
+    - unit : Unit
+    - screen
+    - width : int
+    - height : int
+    - background_color : tuple
+    - text_color : tuple
+    - selected_action : str
+    - attack_range : any
+    __init__(unit, screen) : None
+    + get_role() : str
+    + get_name() : str
+    + update(unit=None, selected_action=None, attack_range=None) : None
+    + draw(x, y) : None
+}
+
+class Button {
+    - image
+    - x_pos : int
+    - y_pos : int
+    - text_input : str
+    - font
+    - base_color
+    - hovering_color
+    + update(screen) : void
+    + checkForInput(position) : bool
+    + changeColor(position) : void
+}
+
+class TextBox {
+    - screen
+    - width : int
+    - height : int
+    - font
+    - x : int
+    - y : int
+    - bg_color : tuple
+    - text_color : tuple
+    - messages : list
+    + add_message(message : str) : void
+    + draw() : void
+}
+
+class Hostage {
+    - x : int
+    - y : int
+    - controlled_by
+    - control_turns : int
+    - image_path : str
+    + draw(screen) : void
+}
+
+class Game {
+    - screen
+    - textbox : TextBox
+    - cell_size : int
+    - grid_size_x : int
+    - grid_size_y : int
+    - logical_map : list
+    - player_units : list
+    - enemy_units : list
+    - hostage : Hostage
+    + handle_turn(active_units, opponents, pause_button, color) : void
+    + move_unit(unit, opponents, pause_button, movement_range) : void
+    + handle_attack(unit, opponents) : void
+    + handle_special_attack(unit, opponents, special_action_range) : void
+    + flip_display(...) : void
+    + display_winner(winner : str) : void
+}
+
+# Derived classes from Unit
+class Doc extends Unit
+class Caveira extends Unit
+class Fuze extends Unit
+class Montagne extends Unit
+class Thermite extends Unit
+class Jackal extends Unit
+class Jaeger extends Unit
+class Kapkan extends Unit
+class Smoke extends Unit
+class Glaz extends Unit
+
+# Relationships
+Card --> Unit
+Game --> Card
+Game --> Button
+Game --> TextBox
+Game --> Hostage
+@enduml
