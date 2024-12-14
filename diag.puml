@@ -1,5 +1,5 @@
 @startuml
-class Unit {
+abstract class Unit {
     - x : int
     - y : int
     - health : int
@@ -86,22 +86,48 @@ class Game {
     + display_winner(winner : str) : void
 }
 
-# Derived classes from Unit
-class Doc extends Unit
-class Caveira extends Unit
-class Fuze extends Unit
-class Montagne extends Unit
-class Thermite extends Unit
-class Jackal extends Unit
-class Jaeger extends Unit
-class Kapkan extends Unit
-class Smoke extends Unit
-class Glaz extends Unit
+' Derived classes from Unit
+class Doc extends Unit {
+    + special_ability(game_map, target_unit) : tuple
+}
 
-# Relationships
+class Caveira extends Unit {
+    + special_ability(game_map, target_unit) : tuple
+}
+
+class Fuze extends Unit {
+    + special_ability(game_map, target_x, target_y) : tuple
+}
+
+class Montagne extends Unit {
+    + special_ability() : void
+}
+
+class Thermite extends Unit {
+    + special_ability(game_map, target_x, target_y) : tuple
+    + get_special_target_range(game_map) : list
+}
+
+class Jackal extends Unit {
+    + special_ability(game_map, target_x, target_y) : tuple
+}
+
+class Jaeger extends Unit {
+    + special_ability() : void
+}
+
+class Smoke extends Unit {
+    + special_ability() : void
+}
+
+class Glaz extends Unit {
+    + special_ability() : void
+}
+
+' Relationships
 Card --> Unit
 Game --> Card
 Game --> Button
 Game --> TextBox
-Game --> Hostage
+Game *--> Hostage
 @enduml
