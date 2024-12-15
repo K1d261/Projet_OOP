@@ -330,24 +330,24 @@ class Game:
         self.last_blink_time = pygame.time.get_ticks()  # Enregistre le dernier temps de changement
 
         original_map = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 0
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 1
-    [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],  # Ligne 2
-    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],  # Ligne 3
-    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 4
-    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 5
-    [0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],  # Ligne 6
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],  # Ligne 7
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0],  # Ligne 8
-    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],  # Ligne 9
-    [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],  # Ligne 10
-    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 11
-    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 12
-    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],  # Ligne 13
-    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],  # Ligne 14
-    [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],  # Ligne 15
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Ligne 16
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]   # Ligne 17
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0],
+    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+    [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+    [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] 
         ]
 
         # Adapter la carte logique à la taille de l'écran
@@ -383,7 +383,7 @@ class Game:
         # Ajuster les positions des unités et de l'otage en fonction de la nouvelle carte
         self.update_unit_positions()
 
-        
+        # Mise à jour de la map logique
         self.update_logical_map()
 
         # Afficher les kits de soin dès le début
@@ -392,18 +392,15 @@ class Game:
          # Appeler la phase de placement initial
         self.initial_placement_phase()
         
+    # Dessine les kits de soin    
     def draw_healthkits(self):
-        """
-        Dessine les kits de soin sur la carte.
-        """
         for x, y in self.healthkits:
             self.screen.blit(self.healthkit_image, (x * self.cell_size, y * self.cell_size))
 
+
+    # Génère aléatoirement 5 kits de soin dans la maison au début de chaque partie.
+    # Retourne une liste de positions (x, y) des kits de soin qui ne se trouvent pas à l'intérieur des murs.
     def generate_healthkits(self):
-        """
-        Génère aléatoirement 5 kits de soin dans la maison au début de chaque partie.
-        Retourne une liste de positions (x, y) des kits de soin qui ne se trouvent pas à l'intérieur des murs.
-        """
         # Définir les limites de la maison
         house_area = [
             (x, y)
@@ -419,9 +416,8 @@ class Game:
         # Retourner 5 positions aléatoires
         return random.sample(house_area, 5)
 
-
+    # Phase de placement initial pour le joueur 2
     def initial_placement_phase(self):
-        """Phase de placement initial pour le joueur 2."""
         font = get_font(40)
         units_to_place = self.enemy_units.copy()
         placed_units = []
@@ -570,7 +566,7 @@ class Game:
                                 placing_normals = False
                                 placing_armored = True
                                 barricade_message = font.render(
-                                    f"Defenseur: Place es barricades blindées ({armored_barricade_limit} restantes)", True, WHITE
+                                    f"Defenseur: Place tes barricades blindées ({armored_barricade_limit} restantes)", True, WHITE
                                 )
 
                     # Placement des barricades blindées
@@ -586,15 +582,15 @@ class Game:
                             self.logical_map[grid_y][grid_x] = 5  # Barricade blindée
                             armored_barricade_limit -= 1
                             barricade_message = font.render(
-                                f"Player 2: Place armored barricades ({armored_barricade_limit} remaining)", True, WHITE
+                                f"Defenseur: place tes barricades blindées ({armored_barricade_limit} restantes)", True, WHITE
                             )
                             if armored_barricade_limit == 0:  # Fin du placement
                                 placing_armored = False
+    
+
+
+    # Génère 5 kits aléatoirement
     def generate_healthkits(self):
-        """
-        Génère aléatoirement 5 kits de soin dans la maison au début de chaque partie.
-        Retourne une liste de positions (x, y) des kits de soin qui ne se trouvent pas à l'intérieur des murs.
-        """
         # Définir les limites de la maison
         house_area = [
             (x, y)
@@ -612,11 +608,10 @@ class Game:
 
         # Dessiner les kits de soin
         self.draw_healthkits()
-    
+
+
+    # Mise à jour de la map logique
     def update_logical_map(self):
-        """
-        Met à jour la carte logique en fonction des positions des unités et de l'otage.
-        """
         # Réinitialiser la carte logique
         for y in range(len(self.logical_map)):
             for x in range(len(self.logical_map[y])):
@@ -646,11 +641,9 @@ class Game:
                 self.logical_map[y][x] = 6  # 6 représente un kit de soin
 
 
+
+    # Verifie si joueur sur kit et applique le soin
     def handle_healthkit_interaction(self, unit):
-        """
-        Vérifie si une unité est sur un kit de soin et applique ses effets.
-        :param unit: L'unité active.
-        """
         for x, y in self.healthkits:
             if (unit.x, unit.y) == (x, y):
                 if unit.health < unit.max_health:
@@ -671,6 +664,8 @@ class Game:
                     # Message pour informer que l'unité est déjà à pleine santé
                     self.textbox.add_message(f"{unit.role} est déjà à pleine santé.")
 
+
+    # Mise à jour de la position    
     def update_unit_positions(self):
         original_width = len(self.logical_map[0])
         original_height = len(self.logical_map)
@@ -685,28 +680,21 @@ class Game:
 
 
 
-
+    # Vérifie si un attaquant intéragit avec l'otage
     def check_hostage_interaction(self, unit):
-        """
-        Vérifie si une unité des attaquants interagit avec l'otage.
-        :param unit: L'unité active.
-        """
         if self.hostage is None:
             return  # Aucun otage à vérifier
         print(f"Checking interaction: Unit at ({unit.x}, {unit.y}), Hostage at ({self.hostage.x}, {self.hostage.y})")
         if unit.team == "player" and (unit.x, unit.y) == (self.hostage.x, self.hostage.y):
-            print(f"Hostage captured by {unit.role}")
+            print(f"Otage capturé par {unit.role}")
             self.logical_map[self.hostage.y][self.hostage.x] = 0  # Retirer l'otage de la carte
             self.hostage = None  # Supprimer l'objet otage
             unit.has_crown = True  # Marquer l'unité avec la couronne
             self.textbox.add_message(f"{unit.role} a récupéré l'otage !")
 
 
+    # Vérifie si l'unité avec l'otage atteint le point d'extraction ou meurt
     def check_extraction_or_death(self, unit):
-        """
-        Vérifie si l'unité avec la couronne atteint un point d'extraction ou meurt.
-        :param unit: L'unité active.
-        """
         extraction_points = [
         (0, 0), (0, 1), (1, 0), (1, 1),
         (0, GRID_SIZE_Y - 2), (0, GRID_SIZE_Y - 1), (1, GRID_SIZE_Y - 2), (1, GRID_SIZE_Y - 1),
@@ -718,28 +706,22 @@ class Game:
         if unit.has_crown:
             if (unit.x, unit.y) in extraction_points:
                 # Victoire des attaquants
-                self.display_winner("Attackers")
+                self.display_winner("Attaquants")
             elif unit.health <= 0:
                 # Victoire des défenseurs
-                self.display_winner("Defenders")
+                self.display_winner("Defenseurs")
 
+
+    # Dessine les points d'extraction        
     def draw_extraction_points(self, extraction_points, color):
-        """
-        Dessine des carrés pleins sur les points d'extraction.
-        :param extraction_points: Liste des points d'extraction.
-        :param color: Couleur à utiliser pour remplir les carrés.
-        """
         for point in extraction_points:
                 rouge_clair = pygame.Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)
                 rouge_clair.fill((255, 0, 0, 128))  # Rouge transparent
                 self.screen.blit(rouge_clair, (point[0] * CELL_SIZE, point[1] * CELL_SIZE))
             
 
-
+    # Return liste des cellules accessibles pour une attaque avec une portée spécifique
     def get_attack_range(self, unit):
-        """
-        Retourne une liste des cellules accessibles pour une attaque avec une portée spécifique.
-        """
         attack_range = []
         max_distance = 7  # Portée d'attaque
 
@@ -757,13 +739,8 @@ class Game:
 
 
 
-    
-
+    # Vérifie si la ligne de vue entre deux points est dégagée et utilise l'algorithme de Bresenham pour tracer une ligne et détecter les obstacles.
     def is_line_of_sight_clear(self, x1, y1, x2, y2):
-        """
-        Vérifie si la ligne de vue entre deux points est dégagée.
-        Utilise l'algorithme de Bresenham pour tracer une ligne et détecter les obstacles.
-        """
         dx = abs(x2 - x1)
         dy = abs(y2 - y1)
         sx = 1 if x2 > x1 else -1
@@ -788,11 +765,8 @@ class Game:
 
 
 
-
+    # Retourne une liste des cellules accessibles pour une unité en fonction de sa position et de sa vitesse
     def get_movement_range(self, unit):
-        """
-        Retourne une liste des cellules accessibles pour une unité en fonction de sa position et de sa vitesse.
-        """
         movement_range = []
         visited = set()
         queue = [(unit.x, unit.y, 0)]  # Utilise une file pour le BFS (x, y, distance)
