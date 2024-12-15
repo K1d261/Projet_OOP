@@ -36,14 +36,14 @@ break_sound = pygame.mixer.Sound("assets/casser.mp3")
 shot_sound = pygame.mixer.Sound("assets/fortnite-pump-shotgun.mp3")
 explosion_sound = pygame.mixer.Sound("assets/explosion.mp3")
 death_sound = pygame.mixer.Sound("assets/death.mp3")
-#Fonctions pour génerer les sons
 
+
+#Fonctions pour génerer les sons
 def play_regen_sound():
     regen_sound.play()
 
 def play_break_sound():
     break_sound.play()
-
 
 def play_shot_sound():
     shot_sound.play()
@@ -56,18 +56,17 @@ def play_death_sound():
     death_sound = pygame.mixer.Sound("assets/death.mp3")
     death_sound.play()
 
-
 # Ajouter un attribut par défaut "has_crown" à toutes les unités
 def initialize_units_with_crown(units):
     for unit in units:
         unit.has_crown = False
 
-# Obtenir la taille de l'écran
+
+
+# Obtenir la taille de l'écran (pour que le jeu s'adapte a tout type d'écran)
 screen_info = pygame.display.Info()
 WIDTH = screen_info.current_w
 HEIGHT = screen_info.current_h
-
-
 
 # Calculer le nombre de cellules qui peuvent tenir sur l'écran
 GRID_SIZE_X = 32
@@ -75,20 +74,15 @@ GRID_SIZE_Y = 18
 
 CELL_SIZE = WIDTH // GRID_SIZE_X
 
-
-
 # Couleurs
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
-# Charger les actifs
+# Chargement de la map
 MAP = pygame.image.load("assets/mapv2-1.png")
 
 # Ajuster l'image de la carte pour correspondre à la grille
 def adjust_map_alignment(map_surface, grid_width, grid_height, cell_size):
-    """
-    Ajuste l'image de la carte pour correspondre exactement à la taille de la grille.
-    """
     target_width = grid_width * cell_size
     target_height = grid_height * cell_size
     return pygame.transform.scale(map_surface, (target_width, target_height))
@@ -97,7 +91,7 @@ MAP = adjust_map_alignment(MAP, GRID_SIZE_X, GRID_SIZE_Y, CELL_SIZE)
 CARD_BACKGROUND = pygame.image.load("assets/Card.png")
 CARD_BACKGROUND = pygame.transform.scale(CARD_BACKGROUND, (350, 650))
 
-# Charger les deux versions de la musique
+# Charger les deux versions de la musique(une pour le jeu l'autre pour la pause)
 normal_music = pygame.mixer.Sound("assets/Metroid - Kraids Lair (Analog Synth remake).mp3")
 muffled_music = pygame.mixer.Sound("assets/Metroid - Kraids Lair (Analog Synth remake) muffled.mp3")
 
@@ -112,9 +106,11 @@ def toggle_music_volume(pause=False):
         normal_music.set_volume(1.0)
         muffled_music.set_volume(0.0)
 
+# Changement de police d'écriture
 def get_font(size):
     return pygame.font.Font("assets/font.ttf", size)
 
+# Menu pause
 def pause_menu():
     toggle_music_volume(pause=True)
     pause_background = pygame.image.load("assets/Pause_menu.jpg")
@@ -149,6 +145,8 @@ def pause_menu():
                     sys.exit()
         pygame.display.update()
 
+
+# Menu principal
 def main_menu():
     normal_music.stop()
     muffled_music.stop()
@@ -185,6 +183,7 @@ def main_menu():
                     sys.exit()
         pygame.display.update()
 
+#Menu règles
 def rules():
     help_background = pygame.image.load("assets/Help.jpg")
     help_background = pygame.transform.scale(help_background, (WIDTH, HEIGHT))
@@ -287,8 +286,9 @@ def rules():
 
         pygame.display.update()
 
+
+# Adapte la map logique à la taille de l'écran
 def adapt_logical_map(logical_map, target_width, target_height):
-    """Resize the logical map to the target width and height."""
     # Truncate or pad rows
     resized_map = logical_map[:target_height]
     while len(resized_map) < target_height:
@@ -302,9 +302,8 @@ def adapt_logical_map(logical_map, target_width, target_height):
 
     return resized_map
 
-
+# Classe principale pour le jeu
 class Game:
-    """Classe pour gérer le jeu."""
 
     def __init__(self, screen):
         self.screen = screen
