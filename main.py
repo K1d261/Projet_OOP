@@ -1308,28 +1308,6 @@ class Game:
                                     (x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
 
 
-        # Dessiner un contour autour des attaquants et des défenseurs
-        for unit in self.player_units:
-            # Contour rouge pour les attaquants
-            rect = pygame.Rect(
-                unit.x * CELL_SIZE, 
-                unit.y * CELL_SIZE, 
-                CELL_SIZE, 
-                CELL_SIZE
-            )
-            pygame.draw.rect(self.screen, (255, 0, 0), rect, 3)  # Rouge, épaisseur 3
-
-        for unit in self.enemy_units:
-            # Contour bleu pour les défenseurs
-            rect = pygame.Rect(
-                unit.x * CELL_SIZE, 
-                unit.y * CELL_SIZE, 
-                CELL_SIZE, 
-                CELL_SIZE
-            )
-            pygame.draw.rect(self.screen, (0, 0, 255), rect, 3)  # Bleu, épaisseur 3
-
-
 
         # Dessiner la carte (Card)
         if card:
