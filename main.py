@@ -790,11 +790,8 @@ class Game:
         return movement_range
 
 
-
+    # Gère l'attaque d'une unité en ciblant uniquement les ennemis dans la portée
     def handle_attack(self, unit, opponents, selected_action="attack"):
-        """
-        Gère l'attaque d'une unité en ciblant uniquement les ennemis dans la portée.
-        """
         attack_range = self.get_attack_range(unit)  # Obtenir la portée d'attaque
         valid_targets = []
 
@@ -883,6 +880,8 @@ class Game:
                                 if target.has_crown:
                                     self.display_winner("Defenders")
                         return  # Fin de l'attaque
+
+
 
 
     def handle_special_attack(self, unit, opponents, special_action_range):
@@ -1070,9 +1069,8 @@ class Game:
 
 
 
-
+    #Vérifie si le bouton pause est cliqué et ouvre le menu pause
     def handle_pause(self, pause_button):
-        """Vérifie si le bouton pause est cliqué et ouvre le menu pause."""
         mouse_pos = pygame.mouse.get_pos()
         if pause_button.checkForInput(mouse_pos):
             pause_menu()
